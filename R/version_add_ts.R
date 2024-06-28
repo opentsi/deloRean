@@ -40,13 +40,14 @@ version_add_ts.data.table <- function(x,
 
     keys <- unique(x$id)
     p <- key_to_path(keys, root_folder = root_folder)
-    sapply(p, dir_create)
+    p_w_root <- file.path(root_folder, p)
+    sapply(p_w_root, dir_create)
 
     by_id <- split(x, f = x$id)
     names(by_id) <- p
     lapply(names(by_id), function(x) {
         fn <- file.path(x, "series.csv")
-        fwrite(by_id[[x]], file = fn)
+        fwrite(by_id[[x]], file = file.path(root_folder, fn))
         git_add(files = fn, repo = repo)
     })
 

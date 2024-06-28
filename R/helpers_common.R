@@ -5,7 +5,6 @@ key_to_path <- function(key, root_folder = "../ts_archive", remote = FALSE) {
             o <- do.call(file.path, as.list(x))
             file.path(o, "series.csv")
         } else {
-            # x <- c(root_folder, x)
             do.call(file.path, as.list(x))
         }
     })

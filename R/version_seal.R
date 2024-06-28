@@ -15,5 +15,6 @@ version_seal <- function(v_obj) {
             v_obj$number_of_series
         )
     )
-    git_tag_create(name = v_obj$version, repo = v_obj$repo)
+    git_tag_create(name = v_obj$version, repo = v_obj$repo,
+        message = v_obj$version)
 }
