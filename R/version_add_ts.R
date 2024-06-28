@@ -16,7 +16,10 @@ version_add_ts <- function(x,
 }
 
 
-#' @exportS3Method opentimeseries::version_add_ts
+# Don't forget to load the package before running document(), 
+# i.e., run document twice.
+# https://stackoverflow.com/questions/61482561/whats-the-preferred-means-for-defining-an-s3-method-in-an-r-package-without-int
+#' @exportS3Method opentsi::version_add_ts
 version_add_ts.data.table <- function(x,
                                       existing_version = NULL,
                                       version = Sys.Date(),
@@ -44,11 +47,11 @@ version_add_ts.data.table <- function(x,
     lapply(names(by_id), function(x) {
         fn <- file.path(x, "series.csv")
         fwrite(by_id[[x]], file = fn)
-        git_add(repo, fn)
+        git_add(files = fn, repo = repo)
     })
 
-    state <- git_status(repo)
-    if (length(state$staged) == 0) {
+    state <- git_status(repo = repo)
+    if (!any(state$staged)) {
         stop("Aborting because no changes were made compared to the previous version. Not creating a new version")
     }
 

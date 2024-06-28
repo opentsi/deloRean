@@ -8,12 +8,12 @@
 #' @export
 version_seal <- function(v_obj) {
     msg <- "version %s containing %d time series stored"
-    git_commit(v_obj$repo,
+    git_commit(repo = v_obj$repo,
         message = sprintf(
             msg,
             v_obj$version,
             v_obj$number_of_series
         )
     )
-    git_tag_create(v_obj$repo, v_obj$version)
+    git_tag_create(name = v_obj$version, repo = v_obj$repo)
 }

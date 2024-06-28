@@ -24,7 +24,7 @@ git_init("../kofethz")
 
 d <- seq(as.Date("2021-01-01"), by = "1 months", length = length(ldt))
 d
-
+i=1
 
 for (i in seq(ldt)) {
     version_add_ts(ldt[[i]], root_folder = "../kofethz", seal = TRUE, version = d[i])
