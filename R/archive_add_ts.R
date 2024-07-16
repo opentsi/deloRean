@@ -7,7 +7,7 @@
 #' @importFrom data.table fwrite
 #' @importFrom fs file_exists dir_create
 #' @export
-version_add_ts <- function(x,
+archive_add_ts <- function(x,
                            existing_version = NULL,
                            version = Sys.Date(),
                            root_folder = "../ts_archive",
@@ -20,16 +20,16 @@ version_add_ts <- function(x,
 # i.e., run document twice.
 # https://stackoverflow.com/questions/61482561/whats-the-preferred-means-for-defining-an-s3-method-in-an-r-package-without-int
 #' @exportS3Method opentsi::version_add_ts
-version_add_ts.data.table <- function(x,
+archive_add_ts.data.table <- function(x,
                                       existing_version = NULL,
                                       version = Sys.Date(),
-                                      root_folder = "../ts_archive",
+                                      archive_folder = "../demo",
                                       seal = FALSE) {
     # init git repo if there is no git repo ####
-    if (!file_exists(file.path(root_folder, ".git"))) {
-        repo <- git_init(root_folder)
+    if (!file_exists(file.path(archive_folder, ".git"))) {
+        repo <- archive_init(archive_folder)
     } else {
-        repo <- root_folder
+        repo <- archive_folder
     }
 
     v <- sprintf("v%s", version)
@@ -38,16 +38,18 @@ version_add_ts.data.table <- function(x,
          date or remove the existing version before.")
     }
 
+    # create all the folders and subfolders to represent
+    # time series identifiers. 
     keys <- unique(x$id)
-    p <- key_to_path(keys, root_folder = root_folder)
-    p_w_root <- file.path(root_folder, p)
+    p <- key_to_path(keys, root_folder = archive_folder)
+    p_w_root <- file.path(archive_folder, p)
     sapply(p_w_root, dir_create)
 
     by_id <- split(x, f = x$id)
     names(by_id) <- p
     lapply(names(by_id), function(x) {
         fn <- file.path(x, "series.csv")
-        fwrite(by_id[[x]], file = file.path(root_folder, fn))
+        fwrite(by_id[[x]], file = file.path(archive_folder, fn))
         git_add(files = fn, repo = repo)
     })
 
