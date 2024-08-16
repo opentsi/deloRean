@@ -1,0 +1,151 @@
+---
+title: "Alfred Package Research"
+author: "Minna Heim"
+date: today
+---
+### Set up
+```{r, setup, message = F}
+library(alfred)
+library(tidyverse)
+library(forecast)
+library(ggplot2)
+library(fpp3)
+```
+
+### Import & Inspect Alfred Data
+There are only 2 functions `get_alfred_data` and `get_fred_data` which extract the data from the (al)fred  websites with the help of their API. 
+
+```{r, import}
+# need to transform this to monthly so that as_tsibble understands this is monthly
+
+cpi <- get_alfred_series(
+    series_id = "CPIAUCSL",
+    series_name = "cpi",
+    observation_start = "2012-01-01",
+    observation_end = "2017-01-01",
+    realtime_start = "2017-01-01",
+    realtime_end = "2024-08-16"
+)
+
+cpi <- cpi |> filter(realtime_period %in% c("2017-01-01", "2024-08-16"))
+```
+
+### Check differences in Versions
+```{r, check differences}
+# check how many values are different, in 2015-01-01 vs. 2024-08-14
+check_revisions <- function(ts) {
+    # hier verallgemeinern - nicht nur dieses datum
+    filtered_ts <- ts |> filter(ts$realtime_period == "2017-01-01")
+    df <- setNames(
+        data.frame(matrix(ncol = 2, nrow = nrow(filtered_ts))),
+        c("date", "difference")
+    )
+
+    for (i in seq_len(nrow(filtered_ts))) {
+        d <- filtered_ts$date[i]
+        difference_df <- ts |> filter(date == d)
+        dist <- difference_df$cpi[1] - difference_df$cpi[2]
+        df$date[i] <- strftime(d)
+        df$difference[i] <- dist
+    }
+    return(df)
+}
+
+revisions <- check_revisions(cpi)
+head(revisions)
+
+```
+
+### Clean time series data
+```{r, clean data}
+cpi_monthly <- cpi |>
+    as_tsibble(key = realtime_period, index = date) |>
+    tsibble::index_by(year_month = ~ yearmonth(.)) |>
+    as_tibble() |>
+    select(-date) |>
+    as_tsibble(key = realtime_period, index = year_month)
+
+# can't remove ex-index if data is in as_tsibble because it still counts it as index, so need to transform this back to tibble & then tsibble again
+# isn't there a smoother way to do this?
+head(cpi_monthly)
+```
+
+Here we have the entire values of the Consumer Price Index (All Urban Consumers) from 2000-01-01 until 2024-07-01 in the two versions: 2024-07-14 and 2024-08-14.
+
+There seems to be little to no data documentation, no descrioptions of units, or structure. Probably because to find the ID, one needs to go to the [alfred website of the CPI](https://alfred.stlouisfed.org/series?seid=CPIAUCSL) where all information is present: 
+
+### Visualize Data
+```{r, visualize}
+# simple autoplot
+autoplot <- autoplot(cpi_monthly)
+autoplot
+
+# using feasts
+cpi_season <- cpi_monthly |> gg_season()
+cpi_season
+
+# Plot both versions to see differences
+plot <- cpi_monthly |>
+    ggplot(aes(x = year_month, y = cpi, color = realtime_period)) +
+    geom_line() +
+    labs(
+        title = "Consumer Price Index (CPI) - Comparison of Realtime Periods",
+        x = "Year-Month",
+        y = "CPI",
+        color = "Realtime Period"
+    ) +
+    theme_minimal()
+
+plot
+
+```
+
+### Forecast with different vintages 
+```{r}
+
+
+```
+
+
+<!-- # try out alfred package, to see how the dataset documentation looks like:
+
+library(alfred)
+indpro <- get_alfred_series("INDPRO", observation_start = "2000-01-01", realtime_start = "2000-01-01")
+head(indpro)
+tail(indpro)
+# data documentation non-existent (no desc. of data, ID, structure, etc.)
+
+
+# to see the reference: what does normal dataset documentation look like
+# (when data is included in packages)
+library(tidyverse)
+library(nycflights13)
+view(flights)
+
+# time series data packages
+library(forecast)
+view(gas)
+view(gold)
+?gas # shows description but without units?, no sources
+?gold # described better, no source
+
+# ?flights #shows desciptions of dataset and source
+
+
+#  vintages output (how does ALFRED handle output)
+head(indpro)
+tail(indpro) -->
+
+### LEARNINGS FOR OPENTIMESERIES: 
+it would be good to not include time frames for realtime_starts/end but to do this with a specific version -> i.e. to use the cpi data from 2000-2014 to predict 2015 incl. vintages, i need the realtime data from 2014-01-01 and 2024-08-14, nothing in between
+
+-> revisions only go back 5 years, so keep all revisions from years prior in case you want to go back further than 5 years..
+e.g.: observation_end =   "2010-01-01","2022-01-01", realtime_start = "2022-01-01", realtime_end = "2024-08-16" -> revisions start 2017-01-01
+<!-- revisions only started from 2010-01-01 onwards
+depending on the realtime start, some data is not revised at all, and others is:
+with observation_end =   "2010-01-01","2020-01-01", realtime_start = "2020 -01-01", realtime_end = "2024-08-16" -> revisions start 2015-01-01... -->
+
+### Data Documentation Insights
+
+
+### Vintage Usage Insights
