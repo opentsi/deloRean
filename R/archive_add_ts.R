@@ -10,16 +10,17 @@
 archive_add_ts <- function(x,
                            existing_version = NULL,
                            version = Sys.Date(),
-                           root_folder = "../ts_archive",
+                           # folder not called the same in base and S3?
+                           archive_folder = "../ts_archive",
                            seal = FALSE) {
-    UseMethod("version_add_ts")
+    UseMethod("archive_add_ts")
 }
 
 
-# Don't forget to load the package before running document(), 
+# Don't forget to load the package before running document(),
 # i.e., run document twice.
 # https://stackoverflow.com/questions/61482561/whats-the-preferred-means-for-defining-an-s3-method-in-an-r-package-without-int
-#' @exportS3Method opentsi::version_add_ts
+#' @exportS3Method opentsi::archive_add_ts
 archive_add_ts.data.table <- function(x,
                                       existing_version = NULL,
                                       version = Sys.Date(),
@@ -39,7 +40,7 @@ archive_add_ts.data.table <- function(x,
     }
 
     # create all the folders and subfolders to represent
-    # time series identifiers. 
+    # time series identifiers.
     keys <- unique(x$id)
     p <- key_to_path(keys, root_folder = archive_folder)
     p_w_root <- file.path(archive_folder, p)
@@ -77,13 +78,16 @@ archive_add_ts.data.table <- function(x,
 }
 
 
-version_add_ts.tslist <- function() {
+archive_add_ts.tslist <- function() {
 
 }
 
+# maybe create archive_add_ts.data.frame
+archive_add_ts.data.frame <- function() {
 
+}
 
-#' @exportS3Method opentimeseries::version_add_ts
-version_add_ts.ts <- function() {
+#' @exportS3Method opentimeseries::archive_add_ts
+archive_add_ts.ts <- function() {
 
 }

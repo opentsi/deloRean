@@ -24,8 +24,12 @@ git_init("../kofethz")
 
 d <- seq(as.Date("2021-01-01"), by = "1 months", length = length(ldt))
 d
-i=1
-
+i <- 1
 for (i in seq(ldt)) {
-    version_add_ts(ldt[[i]], root_folder = "../kofethz", seal = TRUE, version = d[i])
+    # ldt is or class data.table and data.frame, so maybe should create data.frame S3 class?
+    # str(ldt[[i]])
+    archive_add_ts(ldt[[i]],
+        archive_folder = "../kofethz",
+        seal = TRUE, version = d[i]
+    )
 }
