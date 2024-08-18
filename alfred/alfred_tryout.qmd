@@ -5,6 +5,7 @@ date: today
 ---
 ### Set up
 ```{r, setup, message = F}
+library(zoo)
 library(alfred)
 library(tidyverse)
 library(forecast)
@@ -26,13 +27,13 @@ cpi <- get_alfred_series(
     realtime_start = "2017-01-01",
     realtime_end = "2024-08-16"
 )
-
 cpi <- cpi |> filter(realtime_period %in% c("2017-01-01", "2024-08-16"))
+head(cpi)
 ```
 
 ### Check differences in Versions
 ```{r, check differences}
-# check how many values are different, in 2015-01-01 vs. 2024-08-14
+# check how many values are different, in 2017-01-01 vs. 2024-08-14
 check_revisions <- function(ts) {
     # hier verallgemeinern - nicht nur dieses datum
     filtered_ts <- ts |> filter(ts$realtime_period == "2017-01-01")
@@ -58,6 +59,8 @@ head(revisions)
 
 ### Clean time series data
 ```{r, clean data}
+# can't remove ex-index if data is in as_tsibble because it still counts it as index, so need to transform this back to tibble & then tsibble again
+# isn't there a smoother way to do this?
 cpi_monthly <- cpi |>
     as_tsibble(key = realtime_period, index = date) |>
     tsibble::index_by(year_month = ~ yearmonth(.)) |>
@@ -65,8 +68,6 @@ cpi_monthly <- cpi |>
     select(-date) |>
     as_tsibble(key = realtime_period, index = year_month)
 
-# can't remove ex-index if data is in as_tsibble because it still counts it as index, so need to transform this back to tibble & then tsibble again
-# isn't there a smoother way to do this?
 head(cpi_monthly)
 ```
 
@@ -100,52 +101,112 @@ plot
 
 ```
 
+Plotting the time series shows some sort of (linear) trend, and no visible seasonality.
+
 ### Forecast with different vintages 
 ```{r}
+# split acc to 2024,2017
+cpi_2017 <- cpi |>
+    filter(realtime_period == "2017-01-01") |>
+    select(-realtime_period)
+cpi_2024 <- cpi |>
+    filter(realtime_period == "2024-08-16") |>
+    select(-realtime_period)
 
+# split into train and test
+train_2017 <- cpi_2017 |> filter(date <= "2016-01-01")
+test_2017 <- cpi_2017 |> filter(date >= "2016-01-01")
+
+# decompose time series to remove linear trend
+# view(cpi_2017)
+train_2017 <- train_2017 |> select(-date)
+train_2017 <- ts(train_2017)
+
+plot(train_2017)
+
+
+train_2017 <- diff(train_2017)
+plot(train_2017)
+
+# looks stationary - no trend, no seasonality
+acf(train_2017)
+pacf(train_2017)
+
+
+
+# fit arma(1,1) to model?
+fit <- arima(train_2017, order = c(1, 0, 1))
+fit
+fit_2 <- arima(train_2017, order = c(3, 0, 3))
+fit_2
+# Compare BIC
+bic_fit <- BIC(fit)
+bic_fit
+bic_fit_2 <- BIC(fit_2)
+bic_fit_2
+# BIC and AIC show that the first fit is better
+
+cpi_fit <- train_2017 - residuals(fit)
+plot(cpi_fit)
+cpi_fit_2 <- train_2017 - residuals(fit_2)
+plot(cpi_fit_2)
+
+# compare with (p)acf
+acf(cpi_fit)
+pacf(cpi_fit)
+# looks like noise, so successful..
+
+# apply fitted model to test data
+
+
+
+# use forecast() function !!!
 
 ```
 
 
-<!-- # try out alfred package, to see how the dataset documentation looks like:
-
-library(alfred)
-indpro <- get_alfred_series("INDPRO", observation_start = "2000-01-01", realtime_start = "2000-01-01")
-head(indpro)
-tail(indpro)
-# data documentation non-existent (no desc. of data, ID, structure, etc.)
-
-
-# to see the reference: what does normal dataset documentation look like
-# (when data is included in packages)
-library(tidyverse)
-library(nycflights13)
-view(flights)
-
-# time series data packages
-library(forecast)
-view(gas)
-view(gold)
-?gas # shows description but without units?, no sources
-?gold # described better, no source
-
-# ?flights #shows desciptions of dataset and source
-
-
-#  vintages output (how does ALFRED handle output)
-head(indpro)
-tail(indpro) -->
 
 ### LEARNINGS FOR OPENTIMESERIES: 
 it would be good to not include time frames for realtime_starts/end but to do this with a specific version -> i.e. to use the cpi data from 2000-2014 to predict 2015 incl. vintages, i need the realtime data from 2014-01-01 and 2024-08-14, nothing in between
 
 -> revisions only go back 5 years, so keep all revisions from years prior in case you want to go back further than 5 years..
-e.g.: observation_end =   "2010-01-01","2022-01-01", realtime_start = "2022-01-01", realtime_end = "2024-08-16" -> revisions start 2017-01-01
+e.g.: observation_end =   "2010-01-01","2022-01-01", realtime_start = "2022-01-01", realtime_end = "2024-08-16" -> revisions start 2017-01-01 
 <!-- revisions only started from 2010-01-01 onwards
 depending on the realtime start, some data is not revised at all, and others is:
 with observation_end =   "2010-01-01","2020-01-01", realtime_start = "2020 -01-01", realtime_end = "2024-08-16" -> revisions start 2015-01-01... -->
 
 ### Data Documentation Insights
+```{r}
+# try out alfred package, to see how the dataset documentation looks like:
+
+library(alfred)
+indpro <- get_alfred_series("INDPRO", observation_start = "2000-01-01", realtime_start = "2000-01-01")
+head(indpro)
+tail(indpro)
+```
+
+Here, data documentation non-existent (no desc. of data, ID, structure, etc.) -> probably because everythhing is available on their website anyhow...
+
+```{r}
+# time series data packages
+library(forecast)
+head(gas)
+head(gold)
+?gas # shows description but without units?, no sources
+?gold # described better, no source
+
+# ?flights #shows desciptions of dataset and source
+
+#  vintages output (how does ALFRED handle output)
+head(indpro)
+tail(indpro)
+```
+
+here, similar no sources or data descriptions, but most likely because everything can be found in the documentation or vignettes... 
+
+**for opentimeseries especially: deloRean** similarly, we should provide requirements of what information and data descriptions should be disclosed in the readme in the data archives, aka what the deloRean user needs to disclose themselves, so that like in forecast and alfred, people know that they can find the information somewhere. Additionally, in the function description we can disclose that the data descriptions can be found in the readme's.
 
 
 ### Vintage Usage Insights
+
+In alfred different versions are just concatenated, is straightforward but unsuitable for our storage via git, so our way is the easiest. 
