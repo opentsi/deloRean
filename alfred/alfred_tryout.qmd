@@ -103,68 +103,78 @@ plot
 
 Plotting the time series shows some sort of (linear) trend, and no visible seasonality.
 
-### Forecast with different vintages 
+### Forecast with 2017 version
 ```{r}
 # split acc to 2024,2017
 cpi_2017 <- cpi |>
     filter(realtime_period == "2017-01-01") |>
     select(-realtime_period)
-cpi_2024 <- cpi |>
-    filter(realtime_period == "2024-08-16") |>
-    select(-realtime_period)
-
-# split into train and test
-train_2017 <- cpi_2017 |> filter(date <= "2016-01-01")
-test_2017 <- cpi_2017 |> filter(date >= "2016-01-01")
 
 # decompose time series to remove linear trend
 # view(cpi_2017)
-train_2017 <- train_2017 |> select(-date)
-train_2017 <- ts(train_2017)
+cpi_2017 <- cpi_2017 |> select(-date)
+cpi_2017 <- ts(cpi_2017)
 
-plot(train_2017)
+plot(cpi_2017)
 
 
-train_2017 <- diff(train_2017)
-plot(train_2017)
+cpi_2017 <- diff(cpi_2017)
+plot(cpi_2017)
 
 # looks stationary - no trend, no seasonality
-acf(train_2017)
-pacf(train_2017)
+acf(cpi_2017) # ACF shows MA(1)
+pacf(cpi_2017) # PACF indicates AR(1)
 
 
 
 # fit arma(1,1) to model?
-fit <- arima(train_2017, order = c(1, 0, 1))
+fit <- arima(cpi_2017, order = c(1, 0, 1))
 fit
-fit_2 <- arima(train_2017, order = c(3, 0, 3))
+fit_2 <- arima(cpi_2017, order = c(3, 0, 3))
 fit_2
-# Compare BIC
-bic_fit <- BIC(fit)
-bic_fit
-bic_fit_2 <- BIC(fit_2)
-bic_fit_2
-# BIC and AIC show that the first fit is better
+fit_3 <- arima(cpi_2017, order = c(3, 0, 1))
+fit_3
 
-cpi_fit <- train_2017 - residuals(fit)
-plot(cpi_fit)
-cpi_fit_2 <- train_2017 - residuals(fit_2)
-plot(cpi_fit_2)
+cpi_fit <- cpi_2017 - residuals(fit)
+cpi_fit_2 <- cpi_2017 - residuals(fit_2)
+cpi_fit_3 <- cpi_2017 - residuals(fit_3)
+# check residuals
+checkresiduals(cpi_fit) # residuals clearly arent iid
+checkresiduals(cpi_fit_2)
+checkresiduals(cpi_fit_3)
 
+# AIC shows fit 3 is best
 # compare with (p)acf
-acf(cpi_fit)
-pacf(cpi_fit)
-# looks like noise, so successful..
+acf(cpi_fit_3)
+pacf(cpi_fit_3)
 
-# apply fitted model to test data
+# automated arima shows:
+aa <- auto.arima(cpi_2017)
+aa
+checkresiduals(aa)
 
-
-
-# use forecast() function !!!
-
+# forecast cannot do, too little data points i assume...
+autoplot(forecast(cpi_fit_3))
+autoplot(forecast(aa))
 ```
 
+using the automated arima shows that the cpi can be best fitted using a MA(1) model, and the forecast window is smaller, still given few datapoints, not more can be done here.
+ 
+### Forecast with 2024 version
+```{r}
+cpi_2024 <- cpi |>
+    filter(realtime_period == "2024-08-16") |>
+    select(-realtime_period)
+cpi_2024 <- cpi_2024 |> select(-date)
+cpi_2024 <- ts(cpi_2024)
+plot(cpi_2024)
+cpi_2024 <- diff(cpi_2024)
+aa <- auto.arima(cpi_2024)
+aa
+checkresiduals(aa)
+```
 
+Interesting is that with the revised data from 2024-08-16, the coefficient is estimated differently, from 0.34 to 0.39, so significant changes for small data sample.
 
 ### LEARNINGS FOR OPENTIMESERIES: 
 it would be good to not include time frames for realtime_starts/end but to do this with a specific version -> i.e. to use the cpi data from 2000-2014 to predict 2015 incl. vintages, i need the realtime data from 2014-01-01 and 2024-08-14, nothing in between
