@@ -18,16 +18,15 @@ for (i in 1:54) {
     ldt[[i]] <- dt
 }
 
-# put ldt into folder
-fs::dir_create("../kofethz")
-git_init("../kofethz")
-
 d <- seq(as.Date("2021-01-01"), by = "1 months", length = length(ldt))
 d
 i <- 1
+# archive init
+
+
+# archive add
 for (i in seq(ldt)) {
-    # ldt is or class data.table and data.frame, so maybe should create data.frame S3 class?
-    # str(ldt[[i]])
+    archive_init("kofethz", parent_dir = "..")
     archive_add_ts(ldt[[i]],
         archive_folder = "../kofethz",
         seal = TRUE, version = d[i]
