@@ -4,7 +4,6 @@
 archive_init <- function(archive_name,
                          parent_dir = NULL,
                          remote_owner = "opentsi",
-                         basic_readme = TRUE,
                          rproj = TRUE
 
 ){
@@ -14,39 +13,65 @@ archive_init <- function(archive_name,
     archive_path = file.path(parent_dir, archive_name)
   }
 
-  dir_create(archive_path)
+  generic_desc <- sprintf("The %s package provides versioned time series data
+                            and their meta information for scientific research.
+                            In addition, the package contains the
+                            extract-transform-load (ETL) functionality that
+                            sources the data from its original provider.",
+                          archive_name
+                          )
+  generic_desc_sw <- gsub(" +", " ",  generic_desc)
+  generic_desc_no_ls <- gsub("\n\\s+", "\n", generic_desc_sw)
 
-  if(basic_readme){
-    readme_loc <- file.path(archive_path, "README.md")
-    file_touch(readme_loc)
-    repo <- git_init(archive_path)
-    git_add(files = "README.md", repo = repo)
-    git_commit("initial commit", repo = repo)
-    # add archive name to h1
-    # description 
-  }
+  readme_md_content <- sprintf(
+"
+# %s
 
-  if(rproj){
-    # add an Rproj Rstudio project file
-  }
+%s
 
-  # TODO add a description file 
-  # Although mostly associated with R packages, a DESCRIPTION
-  # file can also  be used to declare dependencies
-  # for a non-package project.
-  # possible use the usethis package
-  # add maintainer
-  # add imports
-  # set version to 0.1
-  # suggest opentimeseries R package
+## Browse Time Series Data
+
+## Basic Usage Via opentimeseries
+
+## The %s Provider Data R Package
+
+",
+archive_name,
+generic_desc_no_ls,
+archive_name
+)
+
+  usethis::create_package(
+    path = archive_path,
+    rstudio = rproj,
+    roxygen = TRUE,
+    open = FALSE,
+    fields = list(
+      Title = sprintf("Versioned Long Format Time Series from %s",
+                      toupper(archive_name)),
+      Version = "0.1",
+      Description = generic_desc)
+  )
+
+  readme_loc <- file.path(archive_path, "README.md")
+  file_touch(readme_loc)
+  file_con <- file(readme_loc, "w")
+  writeLines(readme_md_content, file_con)
+  close(file_con)
+
+  use_data_raw(name = gsub("\\.","", archive_name))
+  fs::file_move(path = "data-raw", file.path(archive_path, "data-raw"))
+
+
+  repo <- git_init(archive_path)
+  git_add(files = ".", repo = repo)
+  git_commit("initial commit", repo = repo)
+
   git_init(archive_path)
   repo
 
-
-
-
    if(!is.null(remote_owner)){
      # push to Remote
-     # see Colin's slides. 
+     # see Colin's slides.
    }
 }
