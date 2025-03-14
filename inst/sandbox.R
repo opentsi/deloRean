@@ -5,27 +5,40 @@ library(devtools)
 load_all()
 
 global <- kofdata::get_collection("globalbaro_vintages")
+names(global) <- sub("_", "\\.", names(global))
 class(global) <- c(class(global), "tslist")
 
-ldt <- list()
-for (i in 1:54) {
-    l <- c(global[i], global[i + 54])
-    class(l) <- c(class(l), "tslist")
-    dt <- ts_dt(l)
-    dt$id <- gsub("_[0-9]{4}-[0-9]{2}$", "", dt$id)
-    dt$id <- sprintf("ch.kof.%s", gsub("_", ".", dt$id))
-    setnames(dt, "time", "date")
-    ldt[[i]] <- dt
+release_dates <- rep(seq(as.Date("2020-01-10"),
+                     by = "1 month",
+                     length.out = length(global)/2),2)
+
+
+create_vintages <- function(release_date, tsl){
+  out <- list()
+  keys <- gsub("(.+)(_\\d{4}-\\d{2})","\\1",names(tsl))
+  dt_list <- data.table(
+    id = keys,
+    release_date = as.POSIXct(sprintf("%s 23:59:59",release_date),
+                              tz = "UTC"),
+    data = lapply(tsl, tsbox::ts_dt)
+  )
+  dt_list
 }
 
-# put ldt into folder
-fs::dir_create("../kofethz")
-git_init("../kofethz")
 
-d <- seq(as.Date("2021-01-01"), by = "1 months", length = length(ldt))
-d
-i=1
+dv <- create_vintages(release_dates, global)
 
-for (i in seq(ldt)) {
-    version_add_ts(ldt[[i]], root_folder = "../kofethz", seal = TRUE, version = d[i])
+unique_dates <- unique(dv$release_date)
+
+
+for (rd in unique_dates) {
+  dv_subset <- dv[release_date == rd]
+
+  dv_subset[, {
+    dir.create(id, showWarnings = FALSE)
+    write.csv(data[[1]], file = file.path(id, "data.csv"), row.names = FALSE)
+  }, by = id]
+
+  message(sprintf("%s written", rd))
+
 }

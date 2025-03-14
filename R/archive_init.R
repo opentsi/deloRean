@@ -65,7 +65,7 @@ archive_name
 
   repo <- git_init(archive_path)
   git_add(files = ".", repo = repo)
-  git_commit("initial commit", repo = repo)
+  git_commit("archive init commit", repo = repo)
 
   git_init(archive_path)
   repo
