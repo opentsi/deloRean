@@ -1,4 +1,5 @@
-# Initialize a New Time Series Archive
+# Initialize a New Time Series Dataset Archive
+
 #' @importFrom fs dir_create file_touch
 #' @export
 archive_init <- function(archive_name,
@@ -33,7 +34,7 @@ archive_init <- function(archive_name,
 
 ## Basic Usage Via opentimeseries
 
-## The %s Provider Data R Package
+## The %s Data R Package
 
 ",
 archive_name,
