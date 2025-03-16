@@ -37,9 +37,18 @@ dv <- create_vintages(release_dates, global)
 commit_full_history <- function(history_dt,
                                 repository_path){
   path_chunk <- file.path(repository_path, "data-raw")
-  uk <- key_to_path(unique(history_dt$id))
-  paths <- file.path(path_chunk, uk)
+  uk <- unique(history_dt$id)
+  keys <- sprintf("%s.%s",
+          sub(".*[\\\\/]", "", repository_path),
+          uk)
+  ukp <- key_to_path(uk)
+  paths <- file.path(path_chunk, ukp)
   lapply(paths, dir.create, recursive = TRUE, showWarnings = FALSE)
+
+  # write key index before the actually data, so it gets committed with
+  # the below commit statement.
+  fwrite(list(ts_key = keys),
+         file = file.path(repository_path, "data-raw", "index.csv"))
 
   u <- unique(history_dt$release_date)
   for(rd in u){
@@ -50,10 +59,11 @@ commit_full_history <- function(history_dt,
 
     for(i in 1:nrow(rd_subset)){
       d <- rd_subset[i,]
-      write.csv(d$data[[1]], file = file.path(path_chunk,
-                                            key_to_path(d$id),
-                                            "series.csv"),
-                row.names = FALSE)
+      fwrite(d$data[[1]],
+             file = file.path(path_chunk,
+                              key_to_path(d$id),
+                              "series.csv")
+             )
     }
     # Putting the git commit outside the of the inner loop
     # saves a commit and commits all files that belong
@@ -67,6 +77,23 @@ commit_full_history <- function(history_dt,
                      repo = repository_path)
   }
 }
+
+
+
+
+dataset_update <- function(repo,
+                           time_series_dt,
+                           ){
+  dp <- file.path(repo, 'data-raw')
+  idx <- fread(file.path(dp, "index.csv"))
+  # if keys not in official index of the dataset,
+  # stop and ask whether you want to add a news series...
+
+}
+
+
+
+
 
 
 dv <- create_vintages(release_dates, global)
