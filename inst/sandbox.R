@@ -79,15 +79,42 @@ commit_full_history <- function(history_dt,
 }
 
 
+# Ah wait before we can do step IV we need to 3, i.e., create a remote repo.
+# possible can do that manually for now...
+
+
+
+
+# let's create dummy update release.
+toy <- list()
+toy$leading <- global$`leading.2025-03` * 3
+toy$coincident <- global$`coincident.2025-03` * 5
+
+toy_dt <- lapply(toy, tsbox::ts_dt)
+
+
 
 
 dataset_update <- function(repo,
-                           time_series_dt,
+                           tsl_dt,
                            ){
   dp <- file.path(repo, 'data-raw')
+  input_keys <- sort(names(toy_dt))
   idx <- fread(file.path(dp, "index.csv"))
   # if keys not in official index of the dataset,
   # stop and ask whether you want to add a news series...
+  # because this leads to an history altering
+  # scenario which should not be handled by a standard update.
+  # (all commits need to include the new series in such a case not
+  # just the commit that brings in the new series first.)
+  f_input_keys <- sprintf("%s.%s",
+          sub(".*[\\\\/]", "", repo), input_keys)
+  if(!all.equal(sort(f_input_keys), sort(idx$ts_key))){
+    # TODO: echo time series that are new.
+    stop("Input time series do not match registered time series for this dataset. Would you like to register a new time series to be tracked in this dataset repo?")
+  }
+
+
 
 }
 
