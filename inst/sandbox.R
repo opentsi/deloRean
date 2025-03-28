@@ -52,7 +52,7 @@ commit_full_history <- function(history_dt,
 
   u <- unique(history_dt$release_date)
   for(rd in u){
-    sig <- gert::git_signature("Open Time Series Iniative",
+    sig <- gert::git_signature("Open Time Series Initiative",
                                "bannert@kof.ethz.ch",
                                rd)
     rd_subset <- history_dt[release_date == rd]
@@ -79,45 +79,123 @@ commit_full_history <- function(history_dt,
 }
 
 
+
+commit_by_date <- function(repo,
+                           date_time = Sys.time(),
+                           tz = "UTC",
+                           author = "Open Time Series Initiative",
+                           email = "bannert@kof.ethz.ch"){
+  if(!inherits(x = date_time, "POSIXct")){
+    sig_time <- as.POSIXct(date_time, tz = tz)
+  } else {
+    sig_time <- date_time
+  }
+
+  sig <- gert::git_signature(name = author,
+                             email = email,
+                             time = sig_time)
+
+  gert::git_add(files = "data-raw",
+                repo = repo)
+  gert::git_commit(message = "opentsi release",
+                   author = sig,
+                   committer = sig,
+                   repo = repo)
+}
+
+
 # Ah wait before we can do step IV we need to 3, i.e., create a remote repo.
 # possible can do that manually for now...
 
+# git remote add origin git@github.com:opentsi/ch.kof.globalbaro.git
+# git branch -M main
+# git push -u origin main
 
 
 
 # let's create dummy update release.
 toy <- list()
 toy$leading <- global$`leading.2025-03` * 3
-toy$coincident <- global$`coincident.2025-03` * 5
+toy$coincident <- global$`leading.2025-03` * 5
 
 toy_dt <- lapply(toy, tsbox::ts_dt)
 
 
+# this function is always local thinking
+# either on your computer or in a docker container inside a GHA
+#' @param tsx object containing time series
+#' @export
+dataset_update <- function(tsx,
+                           repo){
+  UseMethod("dataset_update")
+}
 
 
-dataset_update <- function(repo,
-                           tsl_dt,
-                           ){
-  dp <- file.path(repo, 'data-raw')
-  input_keys <- sort(names(toy_dt))
-  idx <- fread(file.path(dp, "index.csv"))
+
+
+dataset_update.tslist <- function(tsx,
+                                  repo){
+  class(tsx) <- "list"
+  dataset_update(tsx)
+}
+
+
+dataset_update.data.table <- function(tsx,
+                                      repo){
+  split(tsx, f = tsx$id)
+}
+
+
+dataset_update.list <- function(tsx,
+                                repo){
+  input_keys <- sort(names(tsx))
+
+  # extract repo name from DESCRIPTIONs
+  # to find correct path
+  desc_file <- desc::desc(file.path(repo,"DESCRIPTION"))
+  repo_name <- desc_file$get("Package")
+  f_ik <- sprintf("%s.%s",repo_name, input_keys)
+  idx <- fread(file.path(repo,"data-raw", "index.csv"))$ts_key
+
   # if keys not in official index of the dataset,
   # stop and ask whether you want to add a news series...
   # because this leads to an history altering
   # scenario which should not be handled by a standard update.
   # (all commits need to include the new series in such a case not
   # just the commit that brings in the new series first.)
-  f_input_keys <- sprintf("%s.%s",
-          sub(".*[\\\\/]", "", repo), input_keys)
-  if(!all.equal(sort(f_input_keys), sort(idx$ts_key))){
+  if(!all.equal(sort(f_ik), sort(idx))){
     # TODO: echo time series that are new.
     stop("Input time series do not match registered time series for this dataset. Would you like to register a new time series to be tracked in this dataset repo?")
   }
 
 
+  out <- sapply(names(tsx), function(x){
+    data_path <- file.path(repo,"data-raw",x,"series.csv")
+    fwrite(tsx[[x]], file = data_path)
+  })
+
+  if(!all(sapply(out, is.null))){
+    message("One or more time series could not be written properly.")
+  }
+
 
 }
 
+
+commit_full_history(dv,
+                    repository_path = "~/repositories/opentsi/ch.kof.globalbaro")
+
+
+
+dataset_update(toy_dt,repo = "~/repositories/opentsi/ch.kof.globalbaro")
+
+
+commit_by_date("~/repositories/opentsi/ch.kof.globalbaro/")
+
+# next step
+# to really test the update can't use a local repo that's left over
+# from the archive init process, we need to depth=1 clone
+# figure when to run this clone, i.e., which functions does it.
 
 
 
@@ -126,8 +204,6 @@ dataset_update <- function(repo,
 dv <- create_vintages(release_dates, global)
 
 debug(commit_full_history)
-commit_full_history(dv,
-                    repository_path = "~/repositories/opentsi/ch.kof.globalbaro")
 
 
 xx <- fread("~/repositories/opentsi/ch.kof.globalbaro/data-raw/coincident/series.csv")
