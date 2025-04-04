@@ -9,6 +9,7 @@ archive_init("ch.kof.globalbaro", "~/repositories/opentsi/")
 Sys.setenv("DELOREAN_TZ" = "UTC")
 Sys.setenv("DELOREAN_EMAIL" = "bannert@kof.ethz.ch")
 Sys.setenv("DELOREAN_AUTHOR" = "Open Time Series Initiative")
+Sys.setenv("DELOREAN_SSH_KEY" = "~/.ssh/id_rsa")
 
 
 
@@ -202,15 +203,22 @@ dataset_update.list <- function(tsx,
                                 remote_provider = "https://github.com",
                                 clean_up_local = TRUE,
                                 local_only = FALSE){
-  if(!local_only){
-    remote_path <- file.path(remote_provider, owner, repo)
-    gert::git_clone(remote_path, file.path(repo_parent_dir, repo))
-  }
-
   prev_wd <- getwd()
   repo_path <- file.path(repo_parent_dir, repo)
-  setwd(repo_path)
 
+  if(!local_only){
+    if(grepl("git@", remote_provider)){
+      remote_path <- sprintf("%s%s/%s.git",remote_provider, owner, repo)
+    } else {
+      remote_path <- file.path(remote_provider, owner, repo)
+    }
+
+    gert::git_clone(remote_path,
+                    repo_path,
+                    ssh_key = Sys.getenv("DELOREAN_SSH_KEY"))
+  }
+
+  setwd(repo_path)
   input_keys <- sort(names(tsx))
 
   # extract repo name from DESCRIPTIONs
@@ -266,7 +274,8 @@ commit_full_history(dv,
 dataset_update(tsx = toy_dt,
                repo = "ch.kof.globalbaro",
                repo_parent_dir = "~/repositories/opentsi",
-               owner = "opentsi")
+               owner = "opentsi",
+               remote_provider = "git@github.com:")
 
 
 
