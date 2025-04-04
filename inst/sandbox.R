@@ -6,6 +6,11 @@ load_all()
 
 archive_init("ch.kof.globalbaro", "~/repositories/opentsi/")
 
+Sys.setenv("DELOREAN_TZ" = "UTC")
+Sys.setenv("DELOREAN_EMAIL" = "bannert@kof.ethz.ch")
+Sys.setenv("DELOREAN_AUTHOR" = "Open Time Series Initiative")
+
+
 
 global <- kofdata::get_collection("globalbaro_vintages")
 names(global) <- gsub("globalbaro_","",names(global))
@@ -80,11 +85,16 @@ commit_full_history <- function(history_dt,
 
 
 
-commit_by_date <- function(repo,
+commit_by_date <- function(repo = NULL,
                            date_time = Sys.time(),
                            tz = "UTC",
                            author = "Open Time Series Initiative",
                            email = "bannert@kof.ethz.ch"){
+  # if you want to use ENV VARS, simply set params to NULL.
+  if(is.null(tz)) tz <- Sys.getenv("DELOREAN_TZ")
+  if(is.null(author)) author <- Sys.getenv("DELOREAN_AUTHOR")
+  if(is.null(email)) email <- Sys.getenv("DELOREAN_EMAIL")
+
   if(!inherits(x = date_time, "POSIXct")){
     sig_time <- as.POSIXct(date_time, tz = tz)
   } else {
@@ -95,12 +105,24 @@ commit_by_date <- function(repo,
                              email = email,
                              time = sig_time)
 
-  gert::git_add(files = "data-raw",
-                repo = repo)
-  gert::git_commit(message = "opentsi release",
-                   author = sig,
-                   committer = sig,
-                   repo = repo)
+  # use working directory if there is no
+  # explicit path spec
+  if(is.null(repo)){
+    gert::git_add(files = "data-raw")
+    gert::git_commit(message = "opentsi release",
+                     author = sig,
+                     committer = sig,
+                     repo = ".")
+  } else {
+    gert::git_add(files = "data-raw",
+                  repo = repo)
+    gert::git_commit(message = "opentsi release",
+                     author = sig,
+                     committer = sig,
+                     repo = repo)
+  }
+
+
 }
 
 
@@ -126,7 +148,13 @@ toy_dt <- lapply(toy, tsbox::ts_dt)
 #' @param tsx object containing time series
 #' @export
 dataset_update <- function(tsx,
-                           repo){
+                           repo,
+                           repo_parent_dir = ".",
+                           owner = "opentsi",
+                           release_date_time = NULL,
+                           remote_provider = "https://github.com",
+                           clean_up_local = TRUE,
+                           local_only = FALSE){
   UseMethod("dataset_update")
 }
 
@@ -134,28 +162,63 @@ dataset_update <- function(tsx,
 
 
 dataset_update.tslist <- function(tsx,
-                                  repo){
+                                  repo,
+                                  repo_parent_dir = ".",
+                                  owner = "opentsi",
+                                  release_date_time = NULL,
+                                  remote_provider = "https://github.com",
+                                  clean_up_local = TRUE,
+                                  local_only = FALSE){
   class(tsx) <- "list"
-  dataset_update(tsx)
+  dataset_update(tsx, repo = repo,
+                 remote_provider = remote_provider,
+                 local_only = local_only)
 }
 
 
 dataset_update.data.table <- function(tsx,
-                                      repo){
-  split(tsx, f = tsx$id)
+                                      repo,
+                                      repo_parent_dir = ".",
+                                      owner = "opentsi",
+                                      release_date_time = NULL,
+                                      remote_provider = "https://github.com",
+                                      clean_up_local = TRUE,
+                                      local_only = FALSE){
+  ll <- split(tsx, f = tsx$id)
+  dataset_update(tsx = ll,
+                 repo = repo,
+                 owner = "opentsi",
+                 remote_provider = remote_provider,
+                 local_only = local_only)
+
 }
 
 
 dataset_update.list <- function(tsx,
-                                repo){
+                                repo,
+                                repo_parent_dir = ".",
+                                owner = "opentsi",
+                                release_date_time = NULL,
+                                remote_provider = "https://github.com",
+                                clean_up_local = TRUE,
+                                local_only = FALSE){
+  if(!local_only){
+    remote_path <- file.path(remote_provider, owner, repo)
+    gert::git_clone(remote_path, file.path(repo_parent_dir, repo))
+  }
+
+  prev_wd <- getwd()
+  repo_path <- file.path(repo_parent_dir, repo)
+  setwd(repo_path)
+
   input_keys <- sort(names(tsx))
 
   # extract repo name from DESCRIPTIONs
   # to find correct path
-  desc_file <- desc::desc(file.path(repo,"DESCRIPTION"))
+  desc_file <- desc::desc(file.path(repo_path,"DESCRIPTION"))
   repo_name <- desc_file$get("Package")
   f_ik <- sprintf("%s.%s",repo_name, input_keys)
-  idx <- fread(file.path(repo,"data-raw", "index.csv"))$ts_key
+  idx <- fread(file.path(repo_path,"data-raw", "index.csv"))$ts_key
 
   # if keys not in official index of the dataset,
   # stop and ask whether you want to add a news series...
@@ -170,7 +233,7 @@ dataset_update.list <- function(tsx,
 
 
   out <- sapply(names(tsx), function(x){
-    data_path <- file.path(repo,"data-raw",x,"series.csv")
+    data_path <- file.path(repo_path,"data-raw",x,"series.csv")
     fwrite(tsx[[x]], file = data_path)
   })
 
@@ -178,6 +241,19 @@ dataset_update.list <- function(tsx,
     message("One or more time series could not be written properly.")
   }
 
+  commit_by_date(repo = NULL,
+                 date_time = release_date_time,
+                 tz = NULL,
+                 author = NULL,
+                 email = NULL)
+
+  if(!local_only){
+    gert::git_push()
+  }
+
+  if(clean_up_local){
+    fs::dir_delete(repo_path)
+  }
 
 }
 
@@ -187,10 +263,12 @@ commit_full_history(dv,
 
 
 
-dataset_update(toy_dt,repo = "~/repositories/opentsi/ch.kof.globalbaro")
+dataset_update(tsx = toy_dt,
+               repo = "ch.kof.globalbaro",
+               repo_parent_dir = "~/repositories/opentsi",
+               owner = "opentsi")
 
 
-commit_by_date("~/repositories/opentsi/ch.kof.globalbaro/")
 
 # next step
 # to really test the update can't use a local repo that's left over
