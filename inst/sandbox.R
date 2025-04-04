@@ -279,11 +279,14 @@ dataset_update(tsx = toy_dt,
 
 
 
-# next step
-# to really test the update can't use a local repo that's left over
-# from the archive init process, we need to depth=1 clone
-# figure when to run this clone, i.e., which functions does it.
 
+# Yay updates work now !!
+# next step
+# move functions from sandbox to R folder
+#
+# (check clone options to get smaller local repo
+# could also postpone this, since GHA does a depth=1 by default)
+# how to add time series alter history -> see good discussion with deep Seek R1
 
 
 
