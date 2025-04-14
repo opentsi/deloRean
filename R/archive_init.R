@@ -1,5 +1,6 @@
-# Initialize a New Time Series Dataset Archive
-
+#' Initialize a New Time Series Dataset Archive
+#'
+#'
 #' @importFrom fs dir_create file_touch
 #' @importFrom usethis use_data_raw
 #' @export
