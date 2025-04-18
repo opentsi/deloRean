@@ -2,10 +2,24 @@
 % Please edit documentation in R/helpers_common.R
 \name{create_vintages}
 \alias{create_vintages}
-\title{Create Vintages From a Named List of Time Series}
+\title{Create Time Series Versions Data Tables (Vintages)}
 \usage{
-create_vintages(release_date, tsl, time_chunk = "23:59:59", tz = "UTC")
+create_vintages(
+  release_date,
+  tsl,
+  time_chunk = "23:59:59",
+  tz = Sys.getenv("DELOREAN_TZ")
+)
+}
+\arguments{
+\item{release_date}{character date vector of release dates, will be
+converted to POSIXct.}
+
+\item{tsl}{list named list of time series.}
+
+\item{time_chunk}{character time formatted as HH:MM:SS.}
 }
 \description{
-Create Vintages From a Named List of Time Series
+This functions uses a vector of release dates and a list of time series to
+create a nested data tables that contains all time series and their release dates.
 }

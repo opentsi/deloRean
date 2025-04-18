@@ -21,7 +21,7 @@ dataset_update <- function(tsx,
 }
 
 
-
+#' @exportS3Method deloRean::dataset_update
 dataset_update.tslist <- function(tsx,
                                   repo,
                                   repo_parent_dir = ".",
@@ -37,6 +37,7 @@ dataset_update.tslist <- function(tsx,
                  local_only = local_only)
 }
 
+#' @exportS3Method deloRean::dataset_update
 dataset_update.data.table <- function(tsx,
                                       repo,
                                       repo_parent_dir = ".",
@@ -54,7 +55,7 @@ dataset_update.data.table <- function(tsx,
 
 }
 
-
+#' @exportS3Method deloRean::dataset_update
 dataset_update.list <- function(tsx,
                                 repo,
                                 repo_parent_dir = ".",
