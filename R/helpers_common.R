@@ -33,7 +33,7 @@ version_exists <- function(date = Sys.Date(), repo) {
 #' @param time_chunk character time formatted as HH:MM:SS.
 #' @importFrom tsbox ts_dt
 #' @export
-create_vintages <- function(release_date,
+create_vintage_dt <- function(release_date,
                             tsl,
                             time_chunk = "23:59:59",
                             tz = Sys.getenv("DELOREAN_TZ")){
@@ -77,7 +77,7 @@ commit_by_date <- function(repo = NULL,
     sig_time <- date_time
   }
 
-  sig <- gert::git_signature(name = author,
+  sig <- git_signature(name = author,
                              email = email,
                              time = sig_time)
 
@@ -112,7 +112,6 @@ set_delorean_env_vars <- function(){
   Sys.setenv("DELOREAN_EMAIL" = "bannert@kof.ethz.ch")
   Sys.setenv("DELOREAN_AUTHOR" = "Open Time Series Initiative")
   Sys.setenv("DELOREAN_SSH_KEY" = "~/.ssh/id_rsa")
-
 }
 
 
