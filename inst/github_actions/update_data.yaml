@@ -1,0 +1,53 @@
+name: Update Data
+
+on: workflow_dispatch
+
+# on: 
+#   schedule:
+#     - cron:"15 4,5 * * *" 
+# switching on to the above will trigger at 4:15, on every 5th day of the month
+
+jobs:
+  setup:
+    runs-on: ubuntu-22.04-arm
+    container: devxygmbh/r-alpine:4-3.21
+    steps:
+      - name: Manual Checkout
+        run: |
+          apk update
+          apk add git
+          git clone --depth=1 https://github.com/${{ github.repository }}.git .
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global --add safe.directory $(pwd)
+
+      - name: Install system dependencies
+        run: |
+          apk add harfbuzz-dev fribidi-dev
+      - name: Set Repo
+        run: |
+          R -e 'options("repos")'
+      - name: Install packages
+        run: |
+          R -q -e 'install.packages("pak")'
+          R -q -e 'pak::pkg_install("data.table")'
+          R -q -e 'pak::pkg_install("remotes")'
+          R -q -e 'pak::pkg_install("gert")'
+      # install future boilerplating to help parse data
+      # R -q -e 'remotes::install_github("opentsi/deloRean")'
+
+      - name: Run scripts
+        run: |
+          R -q -e 'dir()'
+          R -q -e 'source("data-raw/process_data.R")'
+      - name: Push changes
+        run: |
+          git add -A
+          git commit -m "update data"
+      - name: Push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
