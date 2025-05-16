@@ -1,13 +1,14 @@
 #' Initialize a New Time Series Dataset Archive
 #'
 #'
-#' @importFrom fs dir_create file_touch
-#' @importFrom usethis use_data_raw
+#' @importFrom fs dir_create file_touch file_copy file_move
+#' @importFrom usethis use_data_raw use_directory
 #' @export
 archive_init <- function(archive_name,
                          parent_dir = NULL,
                          remote_owner = "opentsi",
-                         rproj = TRUE) {
+                         rproj = TRUE,
+                         use_gha = TRUE) {
   if (is.null(parent_dir)) {
     archive_path <- file.path(getwd(), archive_name)
   } else {
@@ -33,7 +34,7 @@ archive_init <- function(archive_name,
 
 ## Browse Time Series Data
 
-## Basic Usage Via opentimeseries
+## Basic Data Consumption via opentimeseries
 
 
 ```r
@@ -75,8 +76,23 @@ ts
   writeLines(readme_md_content, file_con)
   close(file_con)
 
+  if(use_gha){
+    gha_loc <- file.path(".github","workflows","update_data.yaml")
+    use_directory(".github/workflows")
+    file_move(path = ".github/workflows",
+                  file.path(archive_path, ".github/workflows"))
+    file_copy(
+      system.file("github_actions/update_data.yaml", package = "deloRean")
+    )
+    message("Basic GitHub Action for Updating data created.")
+  }
+
+
+
+
+
   use_data_raw(name = gsub("\\.", "", archive_name))
-  fs::file_move(path = "data-raw", file.path(archive_path, "data-raw"))
+  file_move(path = "data-raw", file.path(archive_path, "data-raw"))
 
 
   repo <- git_init(archive_path)

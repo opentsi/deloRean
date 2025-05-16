@@ -115,6 +115,17 @@ set_delorean_env_vars <- function(){
 }
 
 
+write_update_date_to_file <- function(dt, tz = "UTC",
+                                      data_dir = "data-raw"){
+  fn <- "LAST_UPDATE"
+  pdt <- as.POSIXct(dt, tz = tz)
+  fcon <- file(file.path(data_dir, fn))
+  writeLines(as.character(pdt), con = fcon)
+}
+
+
+
+
 
 
 
