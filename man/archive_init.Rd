@@ -8,7 +8,8 @@ archive_init(
   archive_name,
   parent_dir = NULL,
   remote_owner = "opentsi",
-  rproj = TRUE
+  rproj = TRUE,
+  use_gha = TRUE
 )
 }
 \description{

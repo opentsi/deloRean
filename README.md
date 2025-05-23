@@ -22,7 +22,11 @@ The deloRean R package uses R & Git to manage versioned time series data.
 - dataset = git repo = same release date
 - automate updates with GHA or custom process
 
+### Setting Up a New Archive
 
+1. use boilerplate init_archive
+2. import the history of the time series up until that point
+3. write update functions, for future regular update tracking
 
 
 

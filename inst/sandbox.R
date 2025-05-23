@@ -27,7 +27,7 @@ release_dates <- rep(seq(as.Date("2020-01-10"),
                      length.out = length(global)/2),2)
 
 
-dv <- create_vintages_dt(release_dates, global)
+vintages_dt <- create_vintage_dt(release_dates, global)
 
 
 # commit full history
