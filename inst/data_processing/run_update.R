@@ -1,6 +1,7 @@
 library(deloRean)
 
-#' @importFrom deloRean is_update_needed write_data
+#' @importFrom deloRean is_update_needed write_current_dt
+#' @importFrom desc desc_get
 #' @export
 run_update <- function(){
 
@@ -13,23 +14,24 @@ run_update <- function(){
     return(NULL)
   }
 
+  pkg_name <- desc_get("Package")
+
   # part of the data package,
   # data repo specific function either
   # tmp download and read
   # or API
   # but result is always an in memory long format representation
-  handle_data()
+  current_version <- handle_data()
 
   # skip for now.
   handle_meta_data()
 
-  write_data()
+  write_current_dt(current_version_dt = current_version,
+                   repo_name = pkg_name)
 
   write_meta_data()
 
-  commit_data()
-
-
+  archive_update()
 }
 
 

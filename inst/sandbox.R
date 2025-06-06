@@ -29,6 +29,26 @@ release_dates <- rep(seq(as.Date("2020-01-10"),
 
 vintages_dt <- create_vintage_dt(release_dates, global)
 
+archive_import_history(vintages_dt, "../ch.kof.globalbaro/")
+
+
+debug(write_current_dt)
+write_current_dt(single_dt, repo_name = "ch.kof.globalbaro")
+
+
+tsl <- kofdata::get_time_series(c("ch.kof.globalbaro.leading",
+                           "ch.kof.globalbaro.coincident"))
+
+library(tsbox)
+class(tsl) <- c("tslist","list")
+single_dt <- ts_dt(tsl)
+
+
+deloRean:::key_to_path("ch.kof.globalbaro")
+
+deloRean:::key_to_path(names(s))
+
+
 
 # commit full history
 # git remote add origin git@github.com:opentsi/ch.kof.globalbaro.git

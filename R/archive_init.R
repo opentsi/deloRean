@@ -67,9 +67,13 @@ usethis::create_package(
       toupper(archive_name)
     ),
     Version = "0.1",
-    Description = generic_desc
+    Description = generic_desc,
+    Imports = "desc",
+    Suggests = c("deloRean","tsbox")
   )
 )
+
+
 
 readme_loc <- file.path(archive_path, "README.md")
 file_touch(readme_loc)
