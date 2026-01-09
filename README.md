@@ -20,11 +20,13 @@ By running the `archive_init` function, the package creates an R package like st
 ├── NAMESPACE
 ├── README.md
 ├── R
-│   ├── process_data.R
 ├── data-raw
 │   ├── LAST_UPDATE
+│   ├── process_data.R
 
 ```
+
+Disclaimer: in the R folder will be (newly defined) functions that are used in the `process_data.R` script.
 
 (Although this is the intended package structure, the files `process_data.R` and the GitHub actions folder and its config, and the LAST_UPDATE file isn't included in the `archive_init` function yet.)
 
