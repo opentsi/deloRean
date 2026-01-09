@@ -1,7 +1,6 @@
 # TODO:
 # sandbox to R functions.
 
-
 library(kofdata)
 library(data.table)
 library(tsbox)
