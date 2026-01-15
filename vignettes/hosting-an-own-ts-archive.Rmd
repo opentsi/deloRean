@@ -78,4 +78,4 @@ Now, all we have to do is run the `deloRean::archive_import_history` function, w
 archive_import_history(vintages_dt, "../ch.kof.globalbaro/")
 ```
 
-To check out, what this does, navigate to your data package, in our case `ch.kof.globalbaro` and run `git log`. Then you will see the entire vintages and their commit history.
+To check out, what this does, navigate to your data package, in our case `ch.kof.globalbaro` and run `git log`. Then you will see the entire vintages and their commit history. 
