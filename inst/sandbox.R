@@ -7,7 +7,7 @@ library(tsbox)
 library(devtools)
 load_all()
 
-archive_init("ch.kof.globalbaro", "~/repositories/opentsi/")
+archive_init("ch.kof.globalbaro", parent_dir =  "~/repositories/opentsi/")
 
 Sys.setenv("DELOREAN_TZ" = "UTC")
 Sys.setenv("DELOREAN_EMAIL" = "bannert@kof.ethz.ch")
