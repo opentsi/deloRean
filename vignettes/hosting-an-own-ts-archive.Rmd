@@ -79,3 +79,14 @@ archive_import_history(vintages_dt, "../ch.kof.globalbaro/")
 ```
 
 To check out, what this does, navigate to your data package, in our case `ch.kof.globalbaro` and run `git log`. Then you will see the entire vintages and their commit history. 
+
+Once you have initialised the data package and added the commit history, you can put inplace the processing script, which is responsible for re-fetching the new data, this should be written in the `process_data.R` file. This file could look as follows:
+
+```{r}
+# TODO: write `process_data.R` file for our ch.kof.globalbaro example
+# check LAST_UPDATE 
+# fetch data from data provider (via API e.g.)
+# clean/process data 
+```
+
+Then, the `process_data.R` file is used for the `dataset_update` function (which is automatically run, every xyz days, e.g.) 
