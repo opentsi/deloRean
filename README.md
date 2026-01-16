@@ -111,6 +111,37 @@ This function is responsible for setting up the entire time series dataset and i
 - dataset = git repo = same release date
 - automate updates with GHA or custom process
 
+### Setting Up a New Archive
+
+1. use boilerplate init_archive
+2. import the history of the time series up until that point
+3. write update functions, for future regular update tracking
+
+
+## decision
+
+- data packages mildly dependent on deloRean using suggests. 
+- reason: key to path is needed in update, other additional functions maybe 
+convenient. adding ktp to all data packages no option, cause of maintainance.
+- check function in data package function like this
+
+```
+# the suggested package is required 
+my_fun <- function(a, b) {
+  if (!requireNamespace("deloRean", quietly = TRUE)) {
+    stop(
+      "Package \"aaapkg\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+  # code that includes calls such as aaapkg::aaa_fun()
+}
+
+
+```
+
+
+
 ## Installation
 
 Installation of the package is only necessary if you want to operate a time

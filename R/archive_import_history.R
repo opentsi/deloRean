@@ -17,11 +17,16 @@ archive_import_history <- function(history_dt,
   paths <- file.path(path_chunk, ukp)
   lapply(paths, dir.create, recursive = TRUE, showWarnings = FALSE)
 
-  # write key index before the actually data, so it gets committed with
+  # write key index before the actual data, so it gets committed with
   # the below commit statement.
-  fwrite(list(ts_key = keys),
-         file = file.path(repository_path, "data-raw", "index.csv"),
-         append = TRUE)
+  if(file.exists(
+    file.path(repository_path, "data-raw", "index.csv")
+  )) {
+    stop("Index already exists. Cannot import full history. Consider initiating a new dataset or use archive_register_ts to add new time series to an existing dataset.")
+  } else {
+    fwrite(list(ts_key = keys),
+           file = file.path(repository_path, "data-raw", "index.csv"))
+  }
 
   u <- unique(history_dt$release_date)
   for(rd in u){
