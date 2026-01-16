@@ -1,0 +1,91 @@
+---
+title: "initialise_a_ts_archive"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{initialise_a_ts_archive"}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Load the necessary packages for this reprex
+
+
+```{r setup}
+library(kofdata)
+library(data.table)
+library(tsbox)
+library(devtools)
+
+# TODO: can't install because no namespace export failed
+remotes::install_github("opentsi/deloRean")
+library(deloRean)
+```
+
+
+To initialise the repo, input name of new repo, and location to put it, and set env. vars.
+
+
+```{r initialise repo}
+archive_init("ch.kof.globalbaro", "~/KOF_Lab/opentsi/")
+
+Sys.setenv("DELOREAN_TZ" = "UTC")
+Sys.setenv("DELOREAN_EMAIL" = "bannert@kof.ethz.ch")
+Sys.setenv("DELOREAN_AUTHOR" = "Open Time Series Initiative")
+Sys.setenv("DELOREAN_SSH_KEY" = "~/.ssh/id_rsa")
+```
+
+This creates a new R package in the specified location. Check it out by navigating to that location, and inspecting the files. You should see the following directory structure under `ch.kof.globalbaro`:
+
+```
+├── data-raw
+├── DESCRIPTION
+├── NAMESPACE
+├── R
+├── README.md
+```
+
+After this, we can initialise our mock vintages dataframe.
+
+
+```{r}
+global <- kofdata::get_collection("globalbaro_vintages")
+names(global) <- gsub("globalbaro_","",names(global))
+names(global) <- sub("_", "\\.", names(global))
+class(global) <- c(class(global), "tslist")
+
+release_dates <- rep(seq(as.Date("2020-01-10"),
+                     by = "1 month",
+                     length.out = length(global)/2),2)
+
+vintages_dt <- create_vintage_dt(release_dates, global)
+head(vintages_dt)
+```
+
+The Result is a nested data frame, with the variables: `id`, `release_date` and `data`. In `data` you will find the time series data, with the values `time` and `value`.
+
+Now, all we have to do is run the `deloRean::archive_import_history` function, which creates a git history for the entire vintages, and assigns each vintage its respective release date
+
+```{r backlog}
+archive_import_history(vintages_dt, "../ch.kof.globalbaro/")
+```
+
+To check out, what this does, navigate to your data package, in our case `ch.kof.globalbaro` and run `git log`. Then you will see the entire vintages and their commit history. 
+
+<!-- 
+Once you have initialised the data package and added the commit history, you can put inplace the processing script, which is responsible for re-fetching the new data, this should be written in the `process_data.R` file. This file could look as follows:
+
+```{r}
+# TODO: write `process_data.R` file for our ch.kof.globalbaro example
+# check LAST_UPDATE 
+# fetch data from data provider (via API e.g.)
+# clean/process data 
+```
+
+Then, the `process_data.R` file is used for the `dataset_update` function (which is automatically run, every xyz days, e.g.)  -->

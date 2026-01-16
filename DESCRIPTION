@@ -14,3 +14,7 @@ Imports:
     data.table,
     fs,
     gert
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
