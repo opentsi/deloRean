@@ -1,5 +1,24 @@
 # deloRean: Time Travel for Time Series Data
 
+**What is deloRean?**
+It's an R package to manage and archive versioned time series datasets using basic text formats and git version control. 
+
+
+**What are versioned time series and why would one create different versions of the same time series?**
+Some datasets that observe variables over time do not just add the latest observation at the rear end of a time series when they publish a new release. 
+Data providers may very well revise past observations due to errors or updated information on the past. 
+As a result, today, the value of variable X for November 2025 ago may differ from the value of variable X for November 2025 that the provider thought was correct in December 2025. 
+While most consumers are happy to just see whatever is the most recent information, researchers who need to 
+evaluate their work have to have the same exact information they had back when they performed a computation.
+
+
+
+
+
+
+that very for  front facing dataset on data provider's website 
+
+
 ## Why deloRean?
 
 The deloRean package enables users who work with time series vintages to display time series vintages in a structured and open source way, and automate the "publication" of new versions. In case a user does not want to "publish" the dataset on Github publicly, they can also use deloRean as a local package, and just store datasets in a similar way as online, but without the automated update approach (via GitHub Actions).
