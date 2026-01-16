@@ -1,10 +1,8 @@
 ---
-# i propose an alternative title: host a ts-archive with existing vintages
-# and the second vignette: host a ts-archive (getting started)
-title: "hosting-an-own-ts-archive"
+title: "initialise_a_ts_archive"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{hosting-an-own-ts-archive}
+  %\VignetteIndexEntry{initialise_a_ts_archive"}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -80,6 +78,7 @@ archive_import_history(vintages_dt, "../ch.kof.globalbaro/")
 
 To check out, what this does, navigate to your data package, in our case `ch.kof.globalbaro` and run `git log`. Then you will see the entire vintages and their commit history. 
 
+<!-- 
 Once you have initialised the data package and added the commit history, you can put inplace the processing script, which is responsible for re-fetching the new data, this should be written in the `process_data.R` file. This file could look as follows:
 
 ```{r}
@@ -89,4 +88,4 @@ Once you have initialised the data package and added the commit history, you can
 # clean/process data 
 ```
 
-Then, the `process_data.R` file is used for the `dataset_update` function (which is automatically run, every xyz days, e.g.) 
+Then, the `process_data.R` file is used for the `dataset_update` function (which is automatically run, every xyz days, e.g.)  -->

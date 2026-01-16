@@ -1,0 +1,61 @@
+---
+title: "automation_of_updates"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{automation_of_updates}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Please first initialise a ts archive -> follow that vignette first.
+
+## Runtime Environment Prerequisites
+
+- Hints for Scheduling 
+  - last couple of days/ last weekday of the month
+  - twice a (week)day
+
+- ARM R Image
+
+## Build data R package
+
+Your data R package currently looks like this:
+
+```
+├── data-raw
+│   ├── series.csv
+├── DESCRIPTION
+├── NAMESPACE
+├── R
+│   ├── handle_update.R
+│   ├── is_update_needed.R
+│   ├── handle_downloads.R
+│   ├── process_data.R
+├── README.md
+```
+### End-User Written Functions
+
+In the R folder are boiler plated R functions. Most importantly, you have `handle_update` which calls the functions: `is_update_needed` which compares the dataset's LAST_UPDATE with the publisher's last update, and if `is_update_needed` returns True, then `handle_downloads` runs, and downloads the new data. Lastly, `process_data` ensure that the dataset has the same format as needed. 
+
+### Inside process_data.R
+
+process data into a form that allows to map keys to folders. Maybe also catalogue update (where all keys are left) (in case we get a new dataset into this data package i.e. ch.kof.globalbaro -> coincident & leading, not just leading). Also dataseet specific metainformation 
+
+```{r}
+opentimeseries::key_to_path()
+```
+
+### Understand & Adapt your GHA config 
+
+- provide explanation of boilerplated GHA config
+- specify cron job (if deloRean default doesn't work for you)
+- specify which R pkgs you need to install
+
+### TODO: timeseries specific metadata information (write boilerplated & docs for end-users)

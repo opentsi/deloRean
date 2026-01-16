@@ -32,17 +32,15 @@ jobs:
           R -e 'options("repos")'
       - name: Install packages
         run: |
-          R -q -e 'install.packages("pak")'
-          R -q -e 'pak::pkg_install("data.table")'
+          R -q -e 'install.packages("pak")' 
           R -q -e 'pak::pkg_install("remotes")'
-          R -q -e 'pak::pkg_install("gert")'
-      # install future boilerplating to help parse data
-      # R -q -e 'remotes::install_github("opentsi/deloRean")'
+          R -q -e 'remotes::install_github("opentsi/opentimeseries")'
 
-      - name: Run scripts
+      # TODO: build this R data package
+
+      - name: handle_update
         run: |
-          R -q -e 'dir()'
-          R -q -e 'source("data-raw/process_data.R")'
+          R -q -e '${{ github.repository }}:handle_update()'
       - name: Push changes
         run: |
           git add -A
