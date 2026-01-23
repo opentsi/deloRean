@@ -7,28 +7,56 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 ```
 
-Please first initialise a ts archive -> follow that vignette first.
+
+To be able to automate the dataset updates, the data R package needs to be in place first. If that is not the case, follow the instructions in the vignette `initialise_a_ts_archive.Rmd`.
+
+To be able to automatically update datasets, deloRean builds a github actions configuration into your data package. To inspect this, navigate to `.github/workflows/ci.yaml`. More on this later. For this github action config to run properly, you need to configure a couple of things. 
 
 ## Runtime Environment Prerequisites
 
-- Hints for Scheduling 
-  - last couple of days/ last weekday of the month
-  - twice a (week)day
+<!-- are we scaring people with this? -->
+### Schedule
+- Set a [schedule](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows?search-overlay-input=cron#schedule) which specifies when your dataset should be checked for updates. We use POSIX cron syntax for this. Some examples are:
 
-- ARM R Image
+“At 00:00 on every day-of-week from Monday through Friday.”
+
+```yaml
+on:
+  schedule:
+    - cron: "0 0 * * 1-5"
+```
+
+"At 00:00 on the first day of the month"
+
+```yaml
+on:
+  schedule:
+    - cron: "0 0 1 * *"
+```
+[Here](https://crontab.guru/examples.html) are a couple more common use cases.
+
+
+### ARM R Image
+
+the github actions configuration uses a lightweight ARM Image to be able to run R 
+<!-- TODO: Anything else to mention here? -->
+
 
 ## Build data R package
 
 Your data R package currently looks like this:
 
 ```
+├── .github
+│   ├── workflows
+│   │   ├── ci.yaml
 ├── data-raw
 │   ├── series.csv
 ├── DESCRIPTION
@@ -38,24 +66,56 @@ Your data R package currently looks like this:
 │   ├── is_update_needed.R
 │   ├── handle_downloads.R
 │   ├── process_data.R
+│   ├── handle_update.R #run in gha
 ├── README.md
 ```
+
 ### End-User Written Functions
 
-In the R folder are boiler plated R functions. Most importantly, you have `handle_update` which calls the functions: `is_update_needed` which compares the dataset's LAST_UPDATE with the publisher's last update, and if `is_update_needed` returns True, then `handle_downloads` runs, and downloads the new data. Lastly, `process_data` ensure that the dataset has the same format as needed. 
+In the R folder are boiler plated R functions. Most importantly, you have `handle_update` which calls the functions: `is_update_needed` which compares the dataset's LAST_UPDATE (aka the date written in this file, which is the last time the dataset was updated) with the data publisher's last update, and if `is_update_needed` returns True, then `handle_downloads` runs, and downloads the new data. Lastly, `process_data` ensures that the dataset has the same format as needed. 
 
 ### Inside process_data.R
 
-process data into a form that allows to map keys to folders. Maybe also catalogue update (where all keys are left) (in case we get a new dataset into this data package i.e. ch.kof.globalbaro -> coincident & leading, not just leading). Also dataseet specific metainformation 
+This function (?) processes data into a form that allows to map keys to folders. It also does a catalogue update (where it checks which keys are in this data package, and if these need to be updated). For example: in case we get a new dataset into this data package i.e. ch.kof.globalbaro -> coincident & leading, not just leading. 
+<!-- TODO: Also dataseet specific metainformation -->
 
-```{r}
+```r
 opentimeseries::key_to_path()
+```
+<!--
+One recommendation is to use the opentimeseries R package's `key_to_path` function, and `path_to_key` function. The former uses the key, such as `ch.kof.globalbaro` and nests it into the archive structure. I.e. 
+
+TODO: where is this archive structure used? for users building their own data structure, yes, but many don't -> use opentimeseries to fetch data
+
+-->
+
+```
+├── ch
+│   ├── kof
+│   │   ├── globalbaro
 ```
 
 ### Understand & Adapt your GHA config 
 
+<!-- TODO: in archive_init we also write a helper function: run_update ?? outdated -->
+
+To be able to use your newly created data package well, you need to understand, how the update process works well. We already teasered above, that it uses the github action configuration, and that your data package needs "end-user written functions". But let's put it all together. 
+
+
+**HOW UPDATING WORKS**: In your github actions configuration you are using a scheduler (described above) which specifies when the github actions script is run. This script, when run: takes your git repository (= your data R package) and installs the necessary dependencies and R packages needed to update your data package, and then runs the function `handle_update` which you have written to your data package.
+
+Effectively, `handle_update` checks whether an update is needed (`is_update_needed`) and if True -> processes data....
+<!-- TODO: do we need this extra step, or can we just go straight to process_data -> where described above, this happens too.. -->
+
+
+**Step-by-Step Explanation:**
 - provide explanation of boilerplated GHA config
 - specify cron job (if deloRean default doesn't work for you)
 - specify which R pkgs you need to install
+
+
+### Add remote 
+
+If local, then no gha, if remote, how about adding your reomte to the github organisation [opentsi](https://github.com/opentsi)
 
 ### TODO: timeseries specific metadata information (write boilerplated & docs for end-users)
