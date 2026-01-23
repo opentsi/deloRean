@@ -1,0 +1,36 @@
+---
+title: "initialise_a_ts_archive"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{initialise_a_ts_archive"}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+## Context: before `process_data` is called
+- called in `handle_data`
+- after `is_update_update_needed`
+
+
+## How to write your `process_data` function
+- the `process_data` function does not have any params 
+
+
+### Download the newest version of your data 
+
+### Process s.t. same format as existing dataset
+
+done. 
+
+
+### Context: after `process_data` is called
+- the function `write_open_ts` from the opentimeseries package is used to write the data into the data package. 
+- then the GHA pushes the rest

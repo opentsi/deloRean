@@ -64,15 +64,14 @@ Your data R package currently looks like this:
 ├── R
 │   ├── handle_update.R
 │   ├── is_update_needed.R
-│   ├── handle_downloads.R
 │   ├── process_data.R
-│   ├── handle_update.R #run in gha
+│   ├── dataset_write.R # previously (`dataset_update.R`)
 ├── README.md
 ```
 
 ### End-User Written Functions
 
-In the R folder are boiler plated R functions. Most importantly, you have `handle_update` which calls the functions: `is_update_needed` which compares the dataset's LAST_UPDATE (aka the date written in this file, which is the last time the dataset was updated) with the data publisher's last update, and if `is_update_needed` returns True, then `handle_downloads` runs, and downloads the new data. Lastly, `process_data` ensures that the dataset has the same format as needed. 
+In the R folder are boiler plated R functions. Most importantly, you have `handle_update` which calls the functions: `is_update_needed` which compares the dataset's LAST_UPDATE (aka the date written in this file, which is the last time the dataset was updated) with the data publisher's last update, and if `is_update_needed` returns True, then `process_data` ensures that the dataset is downloaded and is processed s.t. it has the same format as needed, and finally: `dataset_write` writes the data to disk (and then the gha pushes the final changes).
 
 ### Inside process_data.R
 
@@ -94,6 +93,11 @@ TODO: where is this archive structure used? for users building their own data st
 │   ├── kof
 │   │   ├── globalbaro
 ```
+
+### Inside dataset write 
+
+Used to the the `dataset_update` function. it just writes the new time series to the directory, then done.
+
 
 ### Understand & Adapt your GHA config 
 
