@@ -1,8 +1,8 @@
 ---
-title: "initialise_a_ts_archive"
+title: "write_your_process_data"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{initialise_a_ts_archive"}
+  %\VignetteIndexEntry{write_your_process_data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -16,49 +16,122 @@ knitr::opts_chunk$set(
 
 ## Context:
 <!-- TODO: no reference to gha, no deloRean, etc. just teach people to process data, with roxygen -->
-You are a hiwi, you need to do the data processing - you know the source, etc. here's what you're used to doing ch.kof.globalbaro -> show example with kofdata, httr2, and then BFS dataset, e.g.  
 
-## How to write your `process_data` function
-- the `process_data` function does not have any params 
+Assume you are a research assistant, tasked with downloading and processing the latest time series vintage, so that it can be later used for analyses. Assuming you already know the dataset you need to fetch, and the data source which publishes it. 
 
+Let's go through this process, by assuming you want to fetch and process the [KOF's Global Barometer](https://kof.ethz.ch/en/forecasts-and-indicators/indicators/kof-globalbaro.html) which are a system of indicators that enables a timely analysis of global economic development. You know that the KOF Institute publishes this dataset, and you know that there are 2 main ways to fetch it. Let's go through them.
 
-### Download the newest version of your data 
-
-### Process s.t. same format as existing dataset (=tsl)
-
-done. 
+Assuming that you know that the global barometer is timeseries list, consisting of the leading and coincident globalbaro:
 
 
+### Process Globalbaro Data - with {kofdata}
+
+Since there exists a KOF API wrapper in R, you can use this to import and then process your data
 
 
-<!-- TODO: minna:
+<!-- TODO: include roxygen comments -->
+```{r message= FALSE}
+library(kofdata)
 
-- github.com/opentsi/ch.kof.globalbaro exists:
-- use github url to access this repo
-- dann: hol dir die neuen daten: 
-- and write process data script -> make sure the final data is in vign
-- either use API (httr2), kofdata
-- 
- -->
+process_data <- function(key, ids = NULL){
+  # fetch initial tsl
+  tsl <- get_collection(key)
+  names <- names(tsl)
 
+  # helper function used to get last vintage for each id
+  last_vintages <- sapply(ids, function(id) {
+  # use pattern to match the specific ID (e.g., "_coincident_")
+  pattern <- paste0("_", id, "_")
+  
+  # filter all names of ts that match this
+  matches <- names[grepl(pattern, names)]
+  
+  # Sort them (alphabetical works for YYYY-MM) and take the last one
+  return(tail(sort(matches), 1))
+  })
+  res_tsl <- tsl[last_vintages]
 
+  # since we return a tsl, all we need to do to finish processing is remove the suffix for each key 
+  # (to write the data properly later)
+  names(res_tsl) <- sub("_", ".", sub("_[0-9]{4}-[0-9]{2}$", "", names(res_tsl)))
 
-```r
-# get devtools to handle dependencies 
-# more serious roxygen documentation
-
-@return tsl
-@param key time series key 
-@import kofdata get_timeseries
-process_data <- function(key){
-  tsl <- get_timeseries(key)$key
-  return tsl
+  return(res_tsl)
 }
 
-tsl <- process_data(key)
+tsl <- process_data("globalbaro_vintages", ids = c("coincident", "leading"))
 
-ts.plot(tsl)
+# plot all ids together in one plot, so need to combine to matrix
+ts_matrix <- do.call(cbind, tsl)
+ts.plot(ts_matrix, col = 1:ncol(ts_matrix)) 
+```
+
+
+### Process Globalbaro Data - with the KOF API
+
+Now assuming that we don't know about kofdata, then we can use the data providers API (if it is available). First, we read the [API's documentation](https://datenservice.kof.ethz.ch/) and then we use the httr2 package.
+
+```{r}
+library(httr2)
+
+# define a helper function to execute the get request and response
+fetch_data <- function(key){
+  # try pasting the base_set_url into your browser then you see all available sets
+  set_url <- "https://datenservice.kof.ethz.ch/api/v1/public/sets/"
+  get_url <- paste0(set_url, key)
+  # print(get_url)
+
+  response <- request(get_url) |> req_perform() 
+
+  return(resp_body_json(response))
+}
 
 ```
 
-### redo with API, instead of kofdata
+
+```{r}
+process_data <- function(key, ids = NULL){
+
+  # fetch data 
+  raw_json <- fetch_data(key)
+
+  # turn json into tsl
+  tsl <- lapply(raw_json, function(vintage) {
+    
+    # unlist and get all values, convert to numeric
+    values <- as.numeric(unlist(lapply(vintage, function(obs) obs$value)))
+    
+    # Extract first observation, turn into date
+    start_str <- vintage[[1]]$date
+    start_date <- as.numeric(unlist(strsplit(start_str, "-")))
+    
+    # Create the ts object
+    return(ts(values, start = start_date, frequency = 12))
+
+  })
+
+  # select last vintage for each timeseries id
+  all_names <- names(tsl)
+
+  last_names <- sapply(ids, function(id) {
+    matches <- all_names[grepl(paste0("_", id, "_"), all_names)]
+    tail(sort(matches), 1)
+  })
+
+  tsl_subset <- tsl[last_names]
+
+  # clean names, to write_open_ts seamlessly later
+  names(tsl_subset) <- sub("_", ".", sub("_[0-9]{4}-[0-9]{2}$", "", names(tsl_subset)))
+
+  return(tsl_subset)
+
+}
+
+tsl <- process_data("globalbaro_vintages", ids = c("coincident", "leading"))
+
+# plot all ids together in one plot, so need to combine to matrix
+ts_matrix <- do.call(cbind, tsl)
+ts.plot(ts_matrix, col = 1:ncol(ts_matrix)) 
+```
+
+This is how you could write a `process_data` function, which gets the globalbaro vintages, and also transforms them into the timeseries list format. 
+

@@ -106,20 +106,14 @@ Used to the the `dataset_update` function. it just writes the new time series to
 To be able to use your newly created data package well, you need to understand, how the update process works well. We already teasered above, that it uses the github action configuration, and that your data package needs "end-user written functions". But let's put it all together. 
 
 
-**HOW UPDATING WORKS**: In your github actions configuration you are using a scheduler (described above) which specifies when the github actions script is run. This script, when run: takes your git repository (= your data R package) and installs the necessary dependencies and R packages needed to update your data package, and then runs the function `handle_update` which you have written to your data package.
-
-Effectively, `handle_update` checks whether an update is needed (`is_update_needed`) and if True -> processes data....
-<!-- TODO: do we need this extra step, or can we just go straight to process_data -> where described above, this happens too.. -->
+**HOW UPDATING WORKS**: In your github actions configuration you are using a scheduler (described above) which specifies when the github actions script is run. This script, when run: takes your git repository (= your data R package) and installs the necessary dependencies and R packages needed to update your data package, and then runs the function `handle_update` which you have written to your data package. Effectively, `handle_update` checks whether an update is needed (`is_update_needed`) and if True, calls `process_data` which then downloads, and processes the data so it is in the unified tsl format. Finally, the `write_open_ts` function (from opentimeseries) writes the new dataset version to disk, and then the github action handles the rest (=commit, push)
 
 
+<!-- TODO: wrote this before discussion on 23.1. Is this still necessary -->
 **Step-by-Step Explanation:**
 - provide explanation of boilerplated GHA config
 - specify cron job (if deloRean default doesn't work for you)
 - specify which R pkgs you need to install
 
 
-### Add remote 
-
-If local, then no gha, if remote, how about adding your reomte to the github organisation [opentsi](https://github.com/opentsi)
-
-### TODO: timeseries specific metadata information (write boilerplated & docs for end-users)
+<!-- ### TODO: timeseries specific metadata information (write boilerplated & docs for end-users) -->
