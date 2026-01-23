@@ -15,7 +15,6 @@ knitr::opts_chunk$set(
 ```
 
 ## Context:
-<!-- TODO: no reference to gha, no deloRean, etc. just teach people to process data, with roxygen -->
 
 Assume you are a research assistant, tasked with downloading and processing the latest time series vintage, so that it can be later used for analyses. Assuming you already know the dataset you need to fetch, and the data source which publishes it. 
 
@@ -29,10 +28,20 @@ Assuming that you know that the global barometer is timeseries list, consisting 
 Since there exists a KOF API wrapper in R, you can use this to import and then process your data
 
 
-<!-- TODO: include roxygen comments -->
 ```{r message= FALSE}
 library(kofdata)
 
+#' Process KOF Vintage Data into Time Series List (tsl)
+#'
+#' Fetches vintage data from the kofdata R package, filters for the most recent vintage of specific 
+#' indicators, and cleans the resulting names.
+#'
+#' @param key A character string of the KOF set key to fetch.
+#' @param ids A character vector of indicator IDs to extract (e.g., c("coincident", "leading")).
+#'
+#' @return A named list of ts objects (tsl) with cleaned names in the key.id format
+#' @export
+#'
 process_data <- function(key, ids = NULL){
   # fetch initial tsl
   tsl <- get_collection(key)
@@ -73,7 +82,13 @@ Now assuming that we don't know about kofdata, then we can use the data provider
 ```{r}
 library(httr2)
 
-# define a helper function to execute the get request and response
+#' Fetch Raw JSON Data from KOF API
+#'
+#' Internal helper to execute GET requests against the KOF public sets API.
+#'
+#' @param key A character string representing the set key (e.g., "globalbaro_vintages").
+#'
+#' @return A list containing the parsed JSON response.
 fetch_data <- function(key){
   # try pasting the base_set_url into your browser then you see all available sets
   set_url <- "https://datenservice.kof.ethz.ch/api/v1/public/sets/"
@@ -89,6 +104,18 @@ fetch_data <- function(key){
 
 
 ```{r}
+#' Process KOF Vintage Data into Time Series List (tsl)
+#'
+#' Fetches vintage data from the KOF API, converts the JSON structure into 
+#' ts objects, filters for the most recent vintage of specific 
+#' indicators, and cleans the resulting names.
+#'
+#' @param key A character string of the KOF set key to fetch.
+#' @param ids A character vector of indicator IDs to extract (e.g., c("coincident", "leading")).
+#'
+#' @return A named list of ts objects (tsl) with cleaned names in the key.id format
+#' @export
+#'
 process_data <- function(key, ids = NULL){
 
   # fetch data 
