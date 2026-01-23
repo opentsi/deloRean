@@ -14,11 +14,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-
-## Context: before `process_data` is called
-- called in `handle_data`
-- after `is_update_update_needed`
-
+## Context:
+<!-- TODO: no reference to gha, no deloRean, etc. just teach people to process data, with roxygen -->
+You are a hiwi, you need to do the data processing - you know the source, etc. here's what you're used to doing ch.kof.globalbaro -> show example with kofdata, httr2, and then BFS dataset, e.g.  
 
 ## How to write your `process_data` function
 - the `process_data` function does not have any params 
@@ -26,11 +24,41 @@ knitr::opts_chunk$set(
 
 ### Download the newest version of your data 
 
-### Process s.t. same format as existing dataset
+### Process s.t. same format as existing dataset (=tsl)
 
 done. 
 
 
-### Context: after `process_data` is called
-- the function `write_open_ts` from the opentimeseries package is used to write the data into the data package. 
-- then the GHA pushes the rest
+
+
+<!-- TODO: minna:
+
+- github.com/opentsi/ch.kof.globalbaro exists:
+- use github url to access this repo
+- dann: hol dir die neuen daten: 
+- and write process data script -> make sure the final data is in vign
+- either use API (httr2), kofdata
+- 
+ -->
+
+
+
+```r
+# get devtools to handle dependencies 
+# more serious roxygen documentation
+
+@return tsl
+@param key time series key 
+@import kofdata get_timeseries
+process_data <- function(key){
+  tsl <- get_timeseries(key)$key
+  return tsl
+}
+
+tsl <- process_data(key)
+
+ts.plot(tsl)
+
+```
+
+### redo with API, instead of kofdata
