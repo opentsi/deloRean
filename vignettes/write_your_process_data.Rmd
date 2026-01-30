@@ -1,5 +1,5 @@
 ---
-title: "write_your_process_data"
+title: "Write your Process Data"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{write_your_process_data}
@@ -10,7 +10,8 @@ vignette: >
 ```{r include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  eval = FALSE
 )
 ```
 

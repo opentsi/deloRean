@@ -1,5 +1,5 @@
 ---
-title: "automation_of_updates"
+title: "Automation of Dataset Updates"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{automation_of_updates}
@@ -10,14 +10,98 @@ vignette: >
 ```{r include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  eval = FALSE
 )
 ```
 
+## Context:
 
 To be able to automate the dataset updates, the data R package needs to be in place first. If that is not the case, follow the instructions in the vignette `initialise_a_ts_archive.Rmd`.
 
-To be able to automatically update datasets, deloRean builds a github actions configuration into your data package. To inspect this, navigate to `.github/workflows/ci.yaml`. More on this later. For this github action config to run properly, you need to configure a couple of things. 
+Now that you have a time series archive that contains an initial starting ground of versioned time series data, you need to care about getting regular updates of your data in automated fashion. The opentimeseries initiative (opentsi) designed a workflow to help you with that and to streamline the process. 
+
+## Data Ingestion
+
+First, a time series archive, that **was initiated with the help of deloRean package** provides you with a template to consume data from your data provider. This template leverages long time experience in data sourcing from public data providers. For example, it reminds you to implement a strategy to obtain and compare publication dates of from your data source. To find out more Tipps on this, go to the vignette: `write_your_process_data.Rmd`. 
+
+## Scheduling Update Information
+
+Second, your boilerplated data package, in our case `ch.kof.globalbaro` is equipped with a single entry point to use with your favorite scheduler:
+
+```{r}
+# your repo name
+ch.kof.globalbaro::handle_update()
+```
+
+<!-- Assuming you have read the above vignette and implemented your own process_data.R function... -->
+
+Running `handle_update` will trigger a comparison of the date of the last update of your time series version, and source data in case your version is outdated. The data ingestion process lives in the R folder of your data package, in our case `ch.kof.globalbaro/R`, as described in the vignette `write_your_process_data.Rmd`. 
+
+## Github Actions Example 
+
+Third, the boilerplated data package contains an example workflow in `.github/workflows/update_data.yaml`. Let us break down this yaml file into chunks. 
+
+```yaml
+name: Update Data
+on:
+  schedule:
+    - cron:"15 4,5 * * *"
+```
+
+<!-- TODO: aufteilen noch in weitere chunks -->
+```yaml
+jobs:
+  setup:
+    runs-on: ubuntu-22.04-arm
+    container: devxygmbh/r-alpine:4-3.21
+    steps:
+      - name: Manual Checkout
+        run: |
+          apk update
+          apk add git
+          git clone --depth=1 https://github.com/${{ github.repository }}.git .
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global --add safe.directory $(pwd)
+
+      - name: Install system dependencies
+        run: |
+          apk add harfbuzz-dev fribidi-dev
+      - name: Set Repo
+        run: |
+          R -e 'options("repos")'
+      - name: Install packages
+        run: |
+          R -q -e 'install.packages("pak")'
+          R -q -e 'pak::pkg_install("remotes")'
+          R -q -e 'remotes::install_github("opentsi/opentimeseries")'
+
+      # TODO: build this R data package
+      - name: handle_update
+        run: |
+          R -q -e '${{ github.repository }}::handle_update()'
+      - name: Push changes
+        run: |
+          git add -A
+          git commit -m "update data"
+      - name: Push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+```
+
+
+
+
+<!-- - GHA Example 
+- Single Entrypoint for (any) Schedulers  -->
+
+
+<!-- To be able to automatically update datasets, deloRean builds a github actions configuration into your data package. To inspect this, navigate to `.github/workflows/ci.yaml`. More on this later. For this github action config to run properly, you need to configure a couple of things.  -->
 
 ## Runtime Environment Prerequisites
 
