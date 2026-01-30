@@ -46,6 +46,9 @@ This creates a new R package in the specified location. Check it out by navigati
 ├── DESCRIPTION
 ├── NAMESPACE
 ├── R
+│   ├── handle_update.R
+│   ├── is_update_needed.R
+│   ├── process_data.R
 ├── README.md
 ```
 
@@ -142,3 +145,6 @@ Once you have initialised the data package and added the commit history, you can
 ```
 
 Then, the `process_data.R` file is used for the `dataset_update` function (which is automatically run, every xyz days, e.g.)  -->
+
+
+<!-- TODO: How does the repo look after this process -->
