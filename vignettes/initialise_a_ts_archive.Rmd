@@ -1,16 +1,17 @@
 ---
-title: "initialise_a_ts_archive"
+title: "Initialising a Time Series Archive"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{initialise_a_ts_archive"}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-
+<!-- TODO: check if this does global eval = FALSE -->
 ```{r include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  eval = FALSE
 )
 ```
 
@@ -18,13 +19,10 @@ Load the necessary packages for this reprex
 
 
 ```{r setup}
-library(kofdata)
-library(data.table)
-library(tsbox)
-library(devtools)
+library(remotes)
 
-# TODO: can't install because no namespace export failed
-remotes::install_github("opentsi/deloRean")
+install_github("opentsi/opentimeseries",ref = "experiment/opencode")
+install_github("opentsi/deloRean", ref = "cleanup")
 library(deloRean)
 ```
 
@@ -33,7 +31,7 @@ To initialise the repo, input name of new repo, and location to put it, and set 
 
 
 ```{r initialise repo}
-archive_init("ch.kof.globalbaro", "~/KOF_Lab/opentsi/")
+archive_init("ch.kof.globalbaro", parent_dir = "~/KOF_Lab/opentsi/")
 
 Sys.setenv("DELOREAN_TZ" = "UTC")
 Sys.setenv("DELOREAN_EMAIL" = "bannert@kof.ethz.ch")
@@ -53,8 +51,13 @@ This creates a new R package in the specified location. Check it out by navigati
 
 After this, we can initialise our mock vintages dataframe.
 
+Let's load a couple of packages to get and label our demo dataset.
 
-```{r}
+```{r pre-process}
+library(kofdata)
+library(data.table)
+library(tsbox)
+
 global <- kofdata::get_collection("globalbaro_vintages")
 names(global) <- gsub("globalbaro_","",names(global))
 names(global) <- sub("_", "\\.", names(global))
@@ -64,19 +67,69 @@ release_dates <- rep(seq(as.Date("2020-01-10"),
                      by = "1 month",
                      length.out = length(global)/2),2)
 
+```
+
+Now that we have a nested list of vintages, and corresponding releasedates, we can use deloRean's `create_vintage_dt` function to create a nested data.table containing multiple versions of multiple time series (here coincident, leading)
+
+```{r}
 vintages_dt <- create_vintage_dt(release_dates, global)
 head(vintages_dt)
 ```
 
-The Result is a nested data frame, with the variables: `id`, `release_date` and `data`. In `data` you will find the time series data, with the values `time` and `value`.
+Our nested data frame has the variables: `id`, `release_date` and `data`. In `data` you will find the time series data, in the columns `time` and `value`.
 
-Now, all we have to do is run the `deloRean::archive_import_history` function, which creates a git history for the entire vintages, and assigns each vintage its respective release date
+Now, all we have to do is run the `deloRean::archive_import_history` function, which creates a git history for the entire set of vintages, and assigns each vintage its respective release date.
 
 ```{r backlog}
-archive_import_history(vintages_dt, "../ch.kof.globalbaro/")
+archive_import_history(vintages_dt, repository_path = "../ch.kof.globalbaro/")
 ```
 
-To check out, what this does, navigate to your data package, in our case `ch.kof.globalbaro` and run `git log`. Then you will see the entire vintages and their commit history. 
+To check out what this does, navigate to your data package, in our case `ch.kof.globalbaro` and run `git log`. Then you will see the entire vintages and their commit history. 
+
+Your git history should look something like this:
+
+```{sh}
+commit 3185998655bc219d8c907d94dd3baf7c78a4a703
+Author: Open Time Series Initiative <bannert@kof.ethz.ch>
+Date:   Thu Dec 11 00:59:59 2025 +0100
+
+    opentsi full history init
+
+commit 2e38880f59b7f802595fe2b6a200263d6c3de106
+Author: Open Time Series Initiative <bannert@kof.ethz.ch>
+Date:   Tue Nov 11 00:59:59 2025 +0100
+
+    opentsi full history init
+
+commit 5dac427822f081d9986152f1d7bbb13214877266
+Author: Open Time Series Initiative <bannert@kof.ethz.ch>
+Date:   Sat Oct 11 01:59:59 2025 +0200
+
+    opentsi full history init
+
+commit 09ef30ca21c854bc2770cd81e273286f61e43f98
+Author: Open Time Series Initiative <bannert@kof.ethz.ch>
+Date:   Thu Sep 11 01:59:59 2025 +0200
+
+    opentsi full history init
+
+commit e7721f4e9a50ebc2f99290c73a03c5e6e2032126
+Author: Open Time Series Initiative <bannert@kof.ethz.ch>
+Date:   Mon Aug 11 01:59:59 2025 +0200
+
+    opentsi full history init
+
+commit 50957e2160fb7b1fefd23b28e124102e91c68e33
+Author: Open Time Series Initiative <bannert@kof.ethz.ch>
+Date:   Fri Jul 11 01:59:59 2025 +0200
+
+    opentsi full history init
+
+commit 04acff142152d794d37fc05c77d77b5a6b35abd2
+Author: Open Time Series Initiative <bannert@kof.ethz.ch>
+```
+
+<!-- TODO: include code block to see git log-->
 
 <!-- 
 Once you have initialised the data package and added the commit history, you can put inplace the processing script, which is responsible for re-fetching the new data, this should be written in the `process_data.R` file. This file could look as follows:
