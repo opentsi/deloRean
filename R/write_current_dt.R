@@ -1,5 +1,6 @@
 #' @importFrom fs dir_create
 #' @importFrom data.table fwrite
+#' @importFrom opentimeseries key_to_path
 #' @export
 write_current_dt <- function(current_version_dt,
                              repo_name){
