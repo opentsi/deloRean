@@ -40,16 +40,18 @@ Running `handle_update` will trigger a comparison of the date of the last update
 
 ## Github Actions Example 
 
-Third, the boilerplated data package contains an example workflow in `.github/workflows/update_data.yaml`. Let us break down this yaml file into chunks. 
+Third, the boilerplated data package contains an example workflow for automatically running updates of your dataset using GitHub Actions (see `.github/workflows/update_data.yaml`). Let's break down this yaml file into chunks: We use cron notation[^find more on cronjobs and cron notation at https://crontab.guru/] to let GitHub Actions know it should start the processing daily at 8.15 a.m and 11:15 a.m.
 
 ```yaml
 name: Update Data
 on:
   schedule:
-    - cron:"15 4,5 * * *"
+    - cron:"15 8,11 * * *"
 ```
 
-<!-- TODO: aufteilen noch in weitere chunks -->
+That is, spin up a VM and container, run the process in that container, push the artefact back up to Github, shut down the container and finalize the job. Note how GitHub runs docker inside a Virtual Machine and allows you to specify both the VM image and the container image. This a mere detail and mainly mentioned here to make sure the ubuntu image is not mistaking for container image here. Also, other container first CI/CD approaches do not set a VM images in their workflow files. 
+
+
 ```yaml
 jobs:
   setup:
@@ -60,7 +62,18 @@ jobs:
         run: |
           apk update
           apk add git
-          git clone --depth=1 https://github.com/${{ github.repository }}.git .
+          git clone --depth=1 https://github.com/${{ github.repository
+          }}.git .
+          apk add harfbuzz-dev fribidi-dev
+
+```
+
+Note the use of ARM and alpine images here. Alpine "is often called the operating system of CI/CD" and is known for it's slim, resourcing savuing image. 
+The more barebone images require you to install system packages first as well as clone your repositiry to the container. 
+
+
+
+```yaml
 
       - name: Configure Git
         run: |
@@ -68,9 +81,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global --add safe.directory $(pwd)
 
-      - name: Install system dependencies
-        run: |
-          apk add harfbuzz-dev fribidi-dev
+
       - name: Set Repo
         run: |
           R -e 'options("repos")'
