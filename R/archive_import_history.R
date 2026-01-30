@@ -5,7 +5,9 @@
 #' @param repository_path character path to local repository
 #' @importFrom data.table fwrite
 #' @importFrom gert git_signature git_add git_commit
+#' @importFrom opentimeseries key_to_path
 #' @export
+# TODO catalog function, metadata
 archive_import_history <- function(history_dt,
                                 repository_path){
   path_chunk <- file.path(repository_path, "data-raw")

@@ -1,28 +1,5 @@
-key_to_path <- function(key,
-                        root_folder = "../ts_archive",
-                        remote = FALSE) {
-    l <- strsplit(key, "\\.")
-    sapply(l, function(x) {
-        if (remote) {
-            o <- do.call(file.path, as.list(x))
-            file.path(o, "series.csv")
-        } else {
-            do.call(file.path, as.list(x))
-        }
-    })
-}
 
-# replace with git_tag_list(,repo)
-#' @importFrom gert git_tag_list
-version_exists <- function(date = Sys.Date(), repo) {
-    current_version <- sprintf("v%s", date)
-    vs <- names(git_tag_list(repo))
-    any(current_version %in% vs)
-}
-
-
-
-
+# TODO: double check whether we still need this.
 #' Register Commit with Specified Date in the Commit Signature
 #'
 #' This helper functions is typically not called directly. It helps
@@ -53,29 +30,31 @@ commit_by_date <- function(repo = NULL,
   }
 
   sig <- git_signature(name = author,
-                             email = email,
-                             time = sig_time)
+                       email = email,
+                       time = sig_time)
 
   # use working directory if there is no
   # explicit path spec
   if(is.null(repo)){
     git_add(files = "data-raw")
     git_commit(message = "opentsi release",
-                     author = sig,
-                     committer = sig,
-                     repo = ".")
+               author = sig,
+               committer = sig,
+               repo = ".")
   } else {
     git_add(files = "data-raw",
-                  repo = repo)
+            repo = repo)
     git_commit(message = "opentsi release",
-                     author = sig,
-                     committer = sig,
-                     repo = repo)
+               author = sig,
+               committer = sig,
+               repo = repo)
   }
 
 
 }
 
+
+# TODO: double check whether we still need this.
 #' Set Default deloRean Environment Variables
 #'
 #' Set environment variables for timezone, author, author email and SSH
@@ -90,6 +69,7 @@ set_delorean_env_vars <- function(){
 }
 
 
+# TODO: double check whether we still need this.
 write_update_date_to_file <- function(dt, tz = "UTC",
                                       data_dir = "data-raw"){
   fn <- "LAST_UPDATE"

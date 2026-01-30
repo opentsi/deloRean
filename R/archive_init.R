@@ -68,8 +68,7 @@ usethis::create_package(
     ),
     Version = "0.1",
     Description = generic_desc,
-    Imports = "desc",
-    Suggests = c("deloRean","tsbox")
+    Imports = "desc, opentimeseries"
   )
 )
 
@@ -96,16 +95,17 @@ if(use_gha){
 }
 
 # create a boilerplated R folder in the newly created package
-file_copy(system.file("data_processing/handle_data.R",
+file_copy(system.file("data_package_boilerplate/handle_update.R",
                       package = "deloRean"),
           file.path(archive_path,"R"))
-file_copy(system.file("data_processing/run_update.R",
+file_copy(system.file("data_package_boilerplate/is_update_needed.R",
                       package = "deloRean"),
           file.path(archive_path,"R"))
 
-file_copy(system.file("data_processing/get_publisher_last_update.R",
+file_copy(system.file("data_package_boilerplate/process_data.R",
                       package = "deloRean"),
           file.path(archive_path,"R"))
+
 
 use_data_raw(name = gsub("\\.", "", archive_name),
              open = FALSE)
@@ -119,9 +119,6 @@ git_commit("archive init commit", repo = repo)
 msg <- sprintf("New opentimeseries archive '%s' created. Happy editing!",
         archive_name)
 message(msg)
-message("Please add your dataset specific update functions to the R folder of your new bootstrapped data package.")
-message("handle_data.R")
-message("get_publisher_last_update.R")
 
 if (!is.null(remote_owner)) {
   # push to Remote
