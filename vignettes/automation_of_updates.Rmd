@@ -40,7 +40,9 @@ Running `handle_update` will trigger a comparison of the date of the last update
 
 ## Github Actions Example 
 
-Third, the boilerplated data package contains an example workflow for automatically running updates of your dataset using GitHub Actions (see `.github/workflows/update_data.yaml`). Let's break down this yaml file into chunks: We use cron notation[^find more on cronjobs and cron notation at https://crontab.guru/] to let GitHub Actions know it should start the processing daily at 8.15 a.m and 11:15 a.m.
+Third, the boilerplated data package contains an example workflow for automatically running updates of your dataset using GitHub Actions (see `.github/workflows/update_data.yaml`). 
+Of course you can use the entrypoint update function provided by your data package with any other CI/CD tools such as crow, woodpecker, Gitlab CI/CD or Azure DevOps pipelines. 
+Let's break down the GitHub actions example workflow though in order to understand all steps: We use cron notation[^find more on cronjobs and cron notation at https://crontab.guru/] to let GitHub Actions know it should start the processing daily at 8.15 a.m and 11:15 a.m.
 
 ```yaml
 name: Update Data
@@ -68,8 +70,10 @@ jobs:
 
 ```
 
-Note the use of ARM and alpine images here. Alpine "is often called the operating system of CI/CD" and is known for it's slim, resourcing savuing image. 
-The more barebone images require you to install system packages first as well as clone your repositiry to the container. 
+Note the use of ARM and alpine images here. Alpine is often called "the operating system of CI/CD" and is known for it's slim, resourcing saving image. 
+Those more bare bone images require you to install system packages.
+and to clone your repository to the container. 
+We install the `pak` R package for package management and use it to install `opentimeseries` directly from its GitHub repository because our dataset package depends on opentimeseries which is not on CRAN yet. Hence `pak`  can not resolve the dependency automatically through the R ecosystem. 
 
 
 
@@ -91,7 +95,14 @@ The more barebone images require you to install system packages first as well as
           R -q -e 'pak::pkg_install("remotes")'
           R -q -e 'remotes::install_github("opentsi/opentimeseries")'
 
-      # TODO: build this R data package
+```
+
+Once we got opentimeseries we can run the `handle_update` function which is part of our boilerplate generated data package, in our case `ch.kof.globalbaro`.
+Once the update is done and it's part of the cloned repository that lives inside the actions runner container, we can add and commit the changes and eventually push the data update back up to the GitHub repository. 
+
+
+```yaml
+
       - name: handle_update
         run: |
           R -q -e '${{ github.repository }}::handle_update()'
