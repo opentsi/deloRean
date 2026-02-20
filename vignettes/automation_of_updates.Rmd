@@ -7,7 +7,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r include = FALSE}
+```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -42,7 +42,7 @@ Running `handle_update` will trigger a comparison of the date of the last update
 
 Third, the boilerplated data package contains an example workflow for automatically running updates of your dataset using GitHub Actions (see `.github/workflows/update_data.yaml`). 
 Of course you can use the entrypoint update function provided by your data package with any other CI/CD tools such as crow, woodpecker, Gitlab CI/CD or Azure DevOps pipelines. 
-Let's break down the GitHub actions example workflow though in order to understand all steps: We use cron notation[^find more on cronjobs and cron notation at https://crontab.guru/] to let GitHub Actions know it should start the processing daily at 8.15 a.m and 11:15 a.m.
+Let's break down the GitHub actions example workflow though in order to understand all steps: We use cron notation^[find more on cronjobs and cron notation at https://crontab.guru/] to let GitHub Actions know it should start the processing daily at 8.15 a.m and 11:15 a.m.
 
 ```yaml
 name: Update Data

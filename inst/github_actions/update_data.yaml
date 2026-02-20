@@ -40,7 +40,7 @@ jobs:
       # TODO: build this R data package
       - name: handle_update
         run: |
-          R -q -e '${{ github.repository }}:handle_update()'
+          R -q -e '${{ github.repository }}::handle_update()'
       - name: Push changes
         run: |
           git add -A
