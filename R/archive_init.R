@@ -113,7 +113,6 @@ fs::dir_create(
   )
 )
 
-file_move(path = "data-raw", file.path(archive_path, "data-raw"))
 
 
 repo <- git_init(archive_path)
