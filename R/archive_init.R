@@ -2,7 +2,7 @@
 #'
 #'
 #' @importFrom fs dir_create file_touch file_copy file_move
-#' @importFrom usethis use_data_raw use_directory
+#' @importFrom usethis use_directory
 #' @importFrom gert git_init
 #' @export
 archive_init <- function(archive_name,
@@ -56,7 +56,7 @@ ts
   archive_name
   )
 
-usethis::create_package(
+create_package(
   path = archive_path,
   rstudio = rproj,
   roxygen = TRUE,
@@ -107,8 +107,13 @@ file_copy(system.file("data_package_boilerplate/process_data.R",
           file.path(archive_path,"R"))
 
 
-use_data_raw(name = gsub("\\.", "", archive_name),
-             open = FALSE)
+fs::dir_create(
+  file.path(
+    archive_path,"data-raw"
+  )
+)
+
+
 file_move(path = "data-raw", file.path(archive_path, "data-raw"))
 
 
