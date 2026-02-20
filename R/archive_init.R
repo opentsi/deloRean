@@ -2,7 +2,7 @@
 #'
 #'
 #' @importFrom fs dir_create file_touch file_copy file_move
-#' @importFrom usethis use_directory
+#' @importFrom usethis use_data_raw use_directory create_package
 #' @importFrom gert git_init
 #' @export
 archive_init <- function(archive_name,
@@ -112,7 +112,6 @@ fs::dir_create(
     archive_path,"data-raw"
   )
 )
-
 
 file_move(path = "data-raw", file.path(archive_path, "data-raw"))
 
