@@ -8,7 +8,6 @@
 #' @param archive_path Path to the data archive/package directory.
 #'   If NULL (default), uses current working directory.
 #' @param validate Logical. If TRUE (default), validates metadata before rendering.
-#' @param verbose Logical. If TRUE, prints resolved key mappings after rendering.
 #' @return Invisibly returns the metadata as a list.
 #' @importFrom yaml read_yaml
 #' @importFrom jsonlite toJSON
@@ -25,8 +24,7 @@
 #' render_metadata("path/to/my.dataset", validate = FALSE)
 #' }
 render_metadata <- function(archive_path = NULL,
-                            validate = TRUE,
-                            verbose = TRUE) {
+                            validate = TRUE) {
 
   if (is.null(archive_path)) {
     archive_path <- getwd()
@@ -67,18 +65,7 @@ render_metadata <- function(archive_path = NULL,
   writeLines(json_content, json_path)
 
   message(sprintf("Rendered: %s -> %s", yaml_path, json_path))
-
-  # Show resolved keys if verbose
-  if (verbose) {
-    resolved <- resolve_meta(meta)
-    if (nrow(resolved) > 0) {
-      cat("\nResolved keys:\n")
-      for (i in seq_len(nrow(resolved))) {
-        cat(sprintf("  %s\n", resolved$key[i]))
-      }
-      cat("\n")
-    }
-  }
+  message("Use opentimeseries::resolve_meta() to view key mappings.")
 
   invisible(meta)
 }
