@@ -1,0 +1,18 @@
+---
+title: "Metainformation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{initialise_a_ts_archive"}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+<!-- TODO: check if this does global eval = FALSE -->
+```{r include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+This site explains how to add data descriptions to your time series archive and in meanigful and efficient fashion. 

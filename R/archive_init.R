@@ -3,7 +3,7 @@
 #'
 #' @importFrom fs dir_create file_touch file_copy file_move
 #' @importFrom usethis use_data_raw use_directory create_package
-#' @importFrom gert git_init
+#' @importFrom gert git_init git_add git_commit
 #' @export
 archive_init <- function(archive_name,
                          parent_dir = NULL,
@@ -113,7 +113,17 @@ fs::dir_create(
   )
 )
 
+# Copy metadata template
+file_copy(
+  system.file("templates/metadata_template.yaml", package = "deloRean"),
+  file.path(archive_path, "data-raw", "metadata.yaml")
+)
+message("Metadata template created at data-raw/metadata.yaml")
 
+# Create inst directory for rendered metadata
+fs::dir_create(
+  file.path(archive_path, "inst")
+)
 
 repo <- git_init(archive_path)
 git_add(files = ".", repo = repo)
