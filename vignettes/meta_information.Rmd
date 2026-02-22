@@ -2,7 +2,7 @@
 title: "Metainformation"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{initialise_a_ts_archive"}
+  %\VignetteIndexEntry{"Metainformation"}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -17,10 +17,50 @@ knitr::opts_chunk$set(
 
 This site explains how to add data descriptions to your time series archive and in meanigful and efficient - yet simple - fashion. 
 When you [initialized your archive](initialise_a_ts_archive.Rmd) including import of the vintage history you've already created a yaml template to describe your data. 
+
+```{r, eval=FALSE}
+
+library(deloRean)
+archive_init("ch.kof.globalbaro", parent_dir =  "~/repositories/opentsi/")
+
+# vintage_dt is data.frame that contains different versions of the same 
+# to learn how to create such a data.frame, read the initialise a ts archive vignette.
+# two time series: leading and coincident indicators of the KOF Global Economic Barometer
+archive_import_history(vintages_dt, repository_path = "../ch.kof.globalbaro/") 
+
+```
+
+
 The following sections discuss general considerations as well as applied hands-on code to obtain a meta information file that covers dataset specific information as well as time series information.
+Once you followed the below ideas to compose a set of meta descriptions in an edit-friendly yaml file, you can render this file to JSON and validate against the official opentimeseries metadata schema. 
+
+```{r, eval=FALSE}
+render_metadata(archive_path = "../ch.kof.globalbaro")
+
+```
+
+Once the JSON file is rendered, you can use the end-user package opentimeseries to read meta information and resolve the compact format, hierarchical keys to full 1:1 mappings of key and description. You can obtain all available keys directly or get a flat one-line-one observation key-to-description mapping. 
+
+```{r, eval=FALSE}
+library(opentimeseries)
+mi <- read_meta("../ch.kof.globalbaro")
+
+```
+
+The mapping table contains a full and short label.
+Note the language argument which allows you to retrieve multi-lingual descriptions. 
+
+```{r}
+get_keys(mi)
+
+resolve_meta(mi, lang = "en")
 
 
-## General Naming Convention
+```
+
+
+
+## Labelling Your Data: General Naming Conventions
 
 In a researcher focused approach, the opentimeseries initiative suggests time series identifiers that are unique, speaking and hierarchical as opposed to hashes that are solely unique but hard to remember and hard to work with interactively. 
 Semantically meaningful identifiers make data (interactive) analysis with data more convenient, e.g., when column names can be understood right away instead of needing look-up tables. 
@@ -41,7 +81,7 @@ This is ideal when generating multi-lingual meta information as only chunks have
 ## Dataset Specific Information
 
 The first part of the yaml template covers information that remains the same for all series of a dataset. 
-Note that frequency is dataset specific by definition in opentimeseries archives. 
+Note that in opentimeseries archives, frequency is dataset specific property by definition. 
 This implies that all series need to have the same frequency wihtin a dataset, meaning the variables at different would be two distinct datasets (and therefore distinct repos).
 
 ### General Information
@@ -71,18 +111,86 @@ source_url: "https://kof.ethz.ch"
 dataset_frequency: "M"
 
 
+
+```
+
 ### Dimension Order
+
+A variable may be grouped, e.g., sex.age_class, grouping the variable at hand by gender and age class. 
+
+
+```yaml
+dim_order: ["sex","region"]
+```
+
+
+
+Note, that even if your variables do not contain further group clauses, it makes sense to describe what the dimension at which a variable provides us with distincion across different instances looks like. 
+
+```yaml
+dim_order: ["idx_type"]
+```
+
+
+## Hierarchy 
+
+While grouping dimension are comparable to GROUP BY clauses in SQL, hierarchy describes the ability to aggregate variables to a total or subtotal.
+For example, hierarchy defines which time series belong together to aggregate from state level  to the country level. 
+Consider the following example: 
+
+
+```yaml
+hierarchy:
+  residence:
+    tot:
+      ch: ~
+      frgn:
+        sd: ~
+        res: ~
+        seas: ~
+        bc: ~
+        sst: ~
+        oth: ~
+  sex:
+    tot:
+      m: ~
+      f: ~
+
+```
+
+The aggregate entry defines the corresponding aggregation functions, e.g., 
+mean, sum, first or last value. 
+All is a special property to use the same function for all aggregations in the dataset.
+
+```yaml
+
+aggregate:
+  all: mean
 
 
 ```
 
 
-## Variable Specific 
+### Variable Specific Information
+
+The core variable specific meta information are dimension labels. 
 
 
 
+```yaml
+labels:
+  dimnames:
+    idx_type:
+      en: "Index Type"
+      de: "Index Art"
+    leading:
+      en: "Leading Indicator"
+    coincident:
+      en: "Coincident Indicator"
 
-## 
+```
+
+
 
 
 
