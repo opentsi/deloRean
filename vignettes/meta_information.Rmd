@@ -2,11 +2,11 @@
 title: "Metainformation"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{"Metainformation"}
+  %\VignetteIndexEntry{Metainformation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-<!-- TODO: check if this does global eval = FALSE -->
+
 ```{r include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -15,188 +15,371 @@ knitr::opts_chunk$set(
 )
 ```
 
-This site explains how to add data descriptions to your time series archive and in meanigful and efficient - yet simple - fashion. 
-When you [initialized your archive](initialise_a_ts_archive.Rmd) including import of the vintage history you've already created a yaml template to describe your data. 
+This vignette explains how to add metadata to your time series archive. Good metadata makes your data discoverable, understandable, and usable across languages and tools.
 
-```{r, eval=FALSE}
+## Quick Start
 
-library(deloRean)
-archive_init("ch.kof.globalbaro", parent_dir =  "~/repositories/opentsi/")
-
-# vintage_dt is data.frame that contains different versions of the same 
-# to learn how to create such a data.frame, read the initialise a ts archive vignette.
-# two time series: leading and coincident indicators of the KOF Global Economic Barometer
-archive_import_history(vintages_dt, repository_path = "../ch.kof.globalbaro/") 
-
-```
-
-
-The following sections discuss general considerations as well as applied hands-on code to obtain a meta information file that covers dataset specific information as well as time series information.
-Once you followed the below ideas to compose a set of meta descriptions in an edit-friendly yaml file, you can render this file to JSON and validate against the official opentimeseries metadata schema. 
-
-```{r, eval=FALSE}
-render_metadata(archive_path = "../ch.kof.globalbaro")
-
-```
-
-Once the JSON file is rendered, you can use the end-user package opentimeseries to read meta information and resolve the compact format, hierarchical keys to full 1:1 mappings of key and description. You can obtain all available keys directly or get a flat one-line-one observation key-to-description mapping. 
-
-```{r, eval=FALSE}
-library(opentimeseries)
-mi <- read_meta("../ch.kof.globalbaro")
-
-```
-
-The mapping table contains a full and short label.
-Note the language argument which allows you to retrieve multi-lingual descriptions. 
+After [initializing your archive](initialise_a_ts_archive.html), you'll find a metadata template at `data-raw/metadata.yaml`. The workflow is:
 
 ```{r}
-get_keys(mi)
+library(deloRean)
 
-resolve_meta(mi, lang = "en")
+# 1. Initialize archive (creates metadata template)
+archive_init("ch.kof.globalbaro", parent_dir = "~/repositories/opentsi/")
 
+# 2. Edit data-raw/metadata.yaml (fill in your dataset info)
 
+# 3. Validate and render to JSON
+render_metadata("~/repositories/opentsi/ch.kof.globalbaro")
+```
+```
+#> Metadata validation passed.
+#> Rendered: data-raw/metadata.yaml -> inst/metadata.json
 ```
 
+The YAML file is your source (human-readable, editable). The JSON file is the artifact consumed by `opentimeseries`:
 
+```{r}
+library(opentimeseries)
 
-## Labelling Your Data: General Naming Conventions
+# Read metadata (local or remote)
+meta <- read_meta("~/repositories/opentsi/ch.kof.globalbaro")
 
-In a researcher focused approach, the opentimeseries initiative suggests time series identifiers that are unique, speaking and hierarchical as opposed to hashes that are solely unique but hard to remember and hard to work with interactively. 
-Semantically meaningful identifiers make data (interactive) analysis with data more convenient, e.g., when column names can be understood right away instead of needing look-up tables. 
-Our suggestions are SDMX (Statistical Data and Meta Data Exchange) inspired, but avoid the overhead, maintenance and the overall complexity of SDMX. Consider:
+# Get all keys
+get_keys(meta)
+#> [1] "ch.kof.globalbaro.leading"
+#> [2] "ch.kof.globalbaro.coincident"
 
-**country.provider.dataset.frequency.variable.unit**
+# Resolve to human-readable labels
+resolve_meta(meta, lang = "en")
+```
 
-Here's an example of our suggestion working in the wild. 
-The KOF Swiss Economic Institute uses Open Time Series style identifiers for their time series. 
+---
 
-**ch.kof.inu.ng08.fx.q_ql_ass_bs.balance**
+## Key Naming Convention
 
-which reads Switzerland, KOF Swiss Economic Institute, Manufactoring Survey, NACE Sector classification 08, mixed frequency, qualitative question, assessment of business situation, balance.
-This chunk based key does not only allow for memorable variable or column names that are easy to handle in analysis, it also allows the data provider to use combinatorics to generate meta information for a plethora of series with a relatively small number of chunks. 
-This is ideal when generating multi-lingual meta information as only chunks have to be translated an managed. 
+OpenTSI uses **speaking keys** - identifiers that are unique, memorable, and hierarchical:
 
+```
+country.provider.dataset.dimension.variable.unit
+```
 
-## Dataset Specific Information
+### Example
 
-The first part of the yaml template covers information that remains the same for all series of a dataset. 
-Note that in opentimeseries archives, frequency is dataset specific property by definition. 
-This implies that all series need to have the same frequency wihtin a dataset, meaning the variables at different would be two distinct datasets (and therefore distinct repos).
+The KOF Swiss Economic Institute uses this pattern:
 
-### General Information
+```
+ch.kof.inu.ng08.fx.q_ql_ass_bs.balance
+```
+
+| Segment | Meaning |
+|---------|---------|
+| ch | Switzerland (ISO country code) |
+| kof | KOF Swiss Economic Institute |
+| inu | Manufacturing Survey |
+| ng08 | NACE Sector 08 |
+| fx | Mixed frequency |
+| q_ql_ass_bs | Qualitative question, business assessment |
+| balance | Balance (unit) |
+
+**Benefits:**
+
+- Column names are self-documenting during analysis
+- Combinatorics: translate chunks once, generate labels for thousands of series
+- Hierarchical: easy filtering (`grep("^ch.kof.inu", keys)`)
+
+---
+
+## Required Dataset Fields
+
+Every metadata file must include these fields:
 
 ```yaml
-country: "ch"   # ISO 3166-1 alpha-2 code (e.g., "ch", "de", "us")
-provider: "kof"  # short identifier (e.g., "adecco", "seco")
-dataset: "globalbaro"   # short identifier (e.g., "sjmi", "gdp")
+# Identity (forms the key prefix: ch.kof.globalbaro)
+country: "ch"           # ISO 3166-1 alpha-2 (lowercase)
+provider: "kof"         # Short identifier (lowercase, a-z, 0-9, _)
+dataset: "globalbaro"   # Short identifier (lowercase, a-z, 0-9, _)
 
-# Dataset title (required)
-# At minimum, provide English. Add other languages as needed.
+# Descriptions (multilingual, English required)
 title:
   en: "Global Economic Barometer"
-  # de: ""
-  # fr: ""
+  de: "Globales Wirtschaftsbarometer"
 
-# Data source name (required)
 source_name:
   en: "KOF Swiss Economic Institute"
-  # de: ""
+  de: "KOF Konjunkturforschungsstelle"
 
-# URL to original data source (required)
 source_url: "https://kof.ethz.ch"
 
-# Data frequency (required)
-# D = daily, W = weekly, M = monthly, Q = quarterly, Y = yearly, I = irregular
+# Frequency: D=daily, W=weekly, M=monthly, Q=quarterly, Y=yearly, I=irregular
 dataset_frequency: "M"
 
-
-
+# Units (use "all" if uniform across variables)
+units:
+  all:
+    en: "index"
+    de: "Index"
 ```
 
-### Dimension Order
+**Note:** All series in a dataset must share the same frequency. Different frequencies = different datasets (repos).
 
-A variable may be grouped, e.g., sex.age_class, grouping the variable at hand by gender and age class. 
+---
 
+## Flat vs Nested Datasets
+
+### Flat Dataset (No Grouping)
+
+For simple datasets with a few distinct series:
 
 ```yaml
-dim_order: ["sex","region"]
+dim_order: []  # empty - no grouping dimensions
+
+labels:
+  dimnames:
+    leading:
+      en: "Leading Indicator"
+      de: "Frühindikator"
+    coincident:
+      en: "Coincident Indicator"
+      de: "Gleichlaufender Indikator"
 ```
 
+This produces keys:
 
-
-Note, that even if your variables do not contain further group clauses, it makes sense to describe what the dimension at which a variable provides us with distincion across different instances looks like. 
-
-```yaml
-dim_order: ["idx_type"]
+```
+ch.kof.globalbaro.leading
+ch.kof.globalbaro.coincident
 ```
 
+### Grouped Dataset (with dim_order)
 
-## Hierarchy 
-
-While grouping dimension are comparable to GROUP BY clauses in SQL, hierarchy describes the ability to aggregate variables to a total or subtotal.
-For example, hierarchy defines which time series belong together to aggregate from state level  to the country level. 
-Consider the following example: 
-
+When variables are grouped by dimensions (like sex, region):
 
 ```yaml
+dim_order: ["region"]  # region is a grouping dimension
+
+labels:
+  dimnames:
+    region:
+      en: "Region"
+    eu:
+      en: "Europe"
+    us:
+      en: "United States"
+    leading:
+      en: "Leading Indicator"
+```
+
+The `dim_order` tells the system that `region` is a structural dimension, not a series name.
+
+### Hierarchical Dataset (with hierarchy)
+
+For datasets with aggregation structure (e.g., states to country totals):
+
+```yaml
+dim_order: ["residence", "sex"]
+
 hierarchy:
   residence:
-    tot:
-      ch: ~
-      frgn:
-        sd: ~
-        res: ~
-        seas: ~
-        bc: ~
-        sst: ~
-        oth: ~
+    tot:            # total
+      ch: {}        # Swiss
+      frgn:         # foreign
+        res: {}     # residents
+        seas: {}    # seasonal workers
   sex:
     tot:
-      m: ~
-      f: ~
-
-```
-
-The aggregate entry defines the corresponding aggregation functions, e.g., 
-mean, sum, first or last value. 
-All is a special property to use the same function for all aggregations in the dataset.
-
-```yaml
+      m: {}         # male
+      f: {}         # female
 
 aggregate:
-  all: mean
-
-
+  all: "sum"  # how to aggregate: mean, sum, first, last
 ```
 
+This defines which series can be summed to produce totals.
 
-### Variable Specific Information
+---
 
-The core variable specific meta information are dimension labels. 
+## Labels
 
-
+Labels provide human-readable names for key segments. Structure:
 
 ```yaml
 labels:
   dimnames:
+    # Dimension names (structural)
     idx_type:
       en: "Index Type"
-      de: "Index Art"
+      de: "Indextyp"
+
+    # Series names (actual variables)
     leading:
       en: "Leading Indicator"
+      de: "Frühindikator"
     coincident:
       en: "Coincident Indicator"
-
+      de: "Gleichlaufender Indikator"
 ```
 
+**How it works:**
 
+- Everything under `dimnames` gets a label
+- `dim_order` items are excluded from key generation (they're grouping dimensions)
+- Remaining items become the series keys
 
+**Multilingual support:**
 
+- English (`en`) is required as the baseline
+- Add any ISO 639-1 language codes as needed
+- `resolve_meta(meta, lang = "de")` retrieves German labels, falls back to English if missing
 
+---
 
+## Validation and Rendering
 
+### Step 1: Validate
 
+Before rendering, validate your metadata:
 
+```{r}
+# Validates against the OpenTSI schema
+validate_metadata("~/repositories/opentsi/ch.kof.globalbaro")
+```
 
+Common validation errors:
 
+- Missing required fields
+- Invalid country code (must be 2 lowercase letters)
+- Invalid language codes (must be ISO 639-1)
+- Invalid frequency (must be D, W, M, Q, Y, or I)
+
+### Step 2: Render
+
+Convert YAML to JSON:
+
+```{r}
+render_metadata("~/repositories/opentsi/ch.kof.globalbaro")
+```
+
+This:
+
+1. Reads `data-raw/metadata.yaml`
+2. Validates the content
+3. Writes `inst/metadata.json`
+
+### Step 3: Timestamp Updates (Automated)
+
+During data updates (typically via GitHub Actions), the timestamp is updated:
+
+```{r}
+# In your update script (runs via GHA)
+opentimeseries::update_last_updated()
+```
+
+This adds/updates `last_updated` in the JSON file. The YAML source doesn't contain this field - it's auto-generated.
+
+---
+
+## Complete Example
+
+Here's a full `metadata.yaml` for the KOF Global Barometer:
+
+```yaml
+# === Dataset Identity ===
+country: "ch"
+provider: "kof"
+dataset: "globalbaro"
+
+# === Descriptions ===
+title:
+  en: "Global Economic Barometer"
+  de: "Globales Wirtschaftsbarometer"
+
+source_name:
+  en: "KOF Swiss Economic Institute"
+  de: "KOF Konjunkturforschungsstelle"
+
+source_url: "https://kof.ethz.ch/en/forecasts-and-indicators/indicators/kof-globalbarometer.html"
+
+# === Data Properties ===
+dataset_frequency: "M"
+
+units:
+  all:
+    en: "index"
+    de: "Index"
+
+aggregate:
+  all: "mean"
+
+# === Structure ===
+dim_order: []
+
+hierarchy: {}
+
+# === Labels ===
+labels:
+  dimnames:
+    leading:
+      en: "Leading Indicator"
+      de: "Frühindikator"
+    coincident:
+      en: "Coincident Indicator"
+      de: "Gleichlaufender Indikator"
+```
+
+After rendering, consumers can:
+
+```{r}
+library(opentimeseries)
+
+meta <- read_meta("opentsi/ch.kof.globalbaro")  # from GitHub
+
+get_keys(meta)
+#> [1] "ch.kof.globalbaro.leading"
+#> [2] "ch.kof.globalbaro.coincident"
+
+resolve_meta(meta, lang = "de")
+#>                              key                                      label_full                    label_short
+#> 1 ch.kof.globalbaro.leading      KOF Konjunkturforschungsstelle, Globales...    Globales Wirtschaftsbarometer, M, Frühindikator
+#> 2 ch.kof.globalbaro.coincident   KOF Konjunkturforschungsstelle, Globales...    Globales Wirtschaftsbarometer, M, Gleichlaufender Indikator
+
+# Print formatted
+print_resolved(resolve_meta(meta), format = "short")
+#> ch.kof.globalbaro.leading
+#>   -> Global Economic Barometer, M, Leading Indicator
+#>
+#> ch.kof.globalbaro.coincident
+#>   -> Global Economic Barometer, M, Coincident Indicator
+```
+
+---
+
+## JSON Schema
+
+The official schema is available at:
+
+- Package: `inst/schema/opentsi_metadata.schema.json`
+- Online: `https://opentsi.github.io/schema/v1/metadata.json`
+
+View in R:
+
+```{r}
+deloRean::view_schema()
+```
+
+---
+## Summary
+
+| File | Location | Purpose |
+|------|----------|---------|
+| metadata.yaml | data-raw/ | Source (human-editable) |
+| metadata.json | inst/ | Artifact (consumed by opentimeseries) |
+
+| Function | Package | Purpose |
+|----------|---------|---------|
+| `validate_metadata()` | deloRean | Check YAML against schema |
+| `render_metadata()` | deloRean | YAML to JSON |
+| `read_meta()` | opentimeseries | Load metadata (local or remote) |
+| `get_keys()` | opentimeseries | Extract all keys |
+| `resolve_meta()` | opentimeseries | Map keys to labels |
+| `update_last_updated()` | opentimeseries | Stamp JSON with timestamp |
