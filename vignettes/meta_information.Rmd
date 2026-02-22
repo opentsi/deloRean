@@ -16,24 +16,79 @@ knitr::opts_chunk$set(
 ```
 
 This site explains how to add data descriptions to your time series archive and in meanigful and efficient - yet simple - fashion. 
-We recommend to write meta information after you [initialized your archive](initialise_a_ts_archive.Rmd) including import of the vintage history you want to start with. 
+When you [initialized your archive](initialise_a_ts_archive.Rmd) including import of the vintage history you've already created a yaml template to describe your data. 
+The following sections discuss general considerations as well as applied hands-on code to obtain a meta information file that covers dataset specific information as well as time series information.
 
 
 ## General Naming Convention
 
-In a researcher focused approach, the opentimeseries initiative suggests time series identifiers that are unique, speaking and hierarchical as opposed to hashes that are solely unique but hard to remember. 
-Semantically meaningful identifiers make data analysis and interactive with data more convenient, e.g., when column names can be understood right away instead of needing lookup tables. 
-Our suggestions are SDMX (Statistical Data and Meta Data Exchange), but avoid the overhead, maintenance and the overall complexity of SDMX. In general our keys follow a pattern like this: 
+In a researcher focused approach, the opentimeseries initiative suggests time series identifiers that are unique, speaking and hierarchical as opposed to hashes that are solely unique but hard to remember and hard to work with interactively. 
+Semantically meaningful identifiers make data (interactive) analysis with data more convenient, e.g., when column names can be understood right away instead of needing look-up tables. 
+Our suggestions are SDMX (Statistical Data and Meta Data Exchange) inspired, but avoid the overhead, maintenance and the overall complexity of SDMX. Consider:
 
-country.provider.dataset.frequency.variable.unit
+**country.provider.dataset.frequency.variable.unit**
 
-ch.kof.
+Here's an example of our suggestion working in the wild. 
+The KOF Swiss Economic Institute uses Open Time Series style identifiers for their time series. 
 
-semantically meaningful chunks 
+**ch.kof.inu.ng08.fx.q_ql_ass_bs.balance**
 
+which reads Switzerland, KOF Swiss Economic Institute, Manufactoring Survey, NACE Sector classification 08, mixed frequency, qualitative question, assessment of business situation, balance.
+This chunk based key does not only allow for memorable variable or column names that are easy to handle in analysis, it also allows the data provider to use combinatorics to generate meta information for a plethora of series with a relatively small number of chunks. 
+This is ideal when generating multi-lingual meta information as only chunks have to be translated an managed. 
 
 
 ## Dataset Specific Information
 
+The first part of the yaml template covers information that remains the same for all series of a dataset. 
+Note that frequency is dataset specific by definition in opentimeseries archives. 
+This implies that all series need to have the same frequency wihtin a dataset, meaning the variables at different would be two distinct datasets (and therefore distinct repos).
+
+### General Information
+
+```yaml
+country: "ch"   # ISO 3166-1 alpha-2 code (e.g., "ch", "de", "us")
+provider: "kof"  # short identifier (e.g., "adecco", "seco")
+dataset: "globalbaro"   # short identifier (e.g., "sjmi", "gdp")
+
+# Dataset title (required)
+# At minimum, provide English. Add other languages as needed.
+title:
+  en: "Global Economic Barometer"
+  # de: ""
+  # fr: ""
+
+# Data source name (required)
+source_name:
+  en: "KOF Swiss Economic Institute"
+  # de: ""
+
+# URL to original data source (required)
+source_url: "https://kof.ethz.ch"
+
+# Data frequency (required)
+# D = daily, W = weekly, M = monthly, Q = quarterly, Y = yearly, I = irregular
+dataset_frequency: "M"
+
+
+### Dimension Order
+
+
+```
+
 
 ## Variable Specific 
+
+
+
+
+## 
+
+
+
+
+
+
+
+
+
