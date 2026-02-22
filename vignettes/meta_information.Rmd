@@ -15,4 +15,25 @@ knitr::opts_chunk$set(
 )
 ```
 
-This site explains how to add data descriptions to your time series archive and in meanigful and efficient fashion. 
+This site explains how to add data descriptions to your time series archive and in meanigful and efficient - yet simple - fashion. 
+We recommend to write meta information after you [initialized your archive](initialise_a_ts_archive.Rmd) including import of the vintage history you want to start with. 
+
+
+## General Naming Convention
+
+In a researcher focused approach, the opentimeseries initiative suggests time series identifiers that are unique, speaking and hierarchical as opposed to hashes that are solely unique but hard to remember. 
+Semantically meaningful identifiers make data analysis and interactive with data more convenient, e.g., when column names can be understood right away instead of needing lookup tables. 
+Our suggestions are SDMX (Statistical Data and Meta Data Exchange), but avoid the overhead, maintenance and the overall complexity of SDMX. In general our keys follow a pattern like this: 
+
+country.provider.dataset.frequency.variable.unit
+
+ch.kof.
+
+semantically meaningful chunks 
+
+
+
+## Dataset Specific Information
+
+
+## Variable Specific 
