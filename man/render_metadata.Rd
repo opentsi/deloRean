@@ -4,15 +4,13 @@
 \alias{render_metadata}
 \title{Render Metadata YAML to JSON}
 \usage{
-render_metadata(archive_path = NULL, validate = TRUE, verbose = TRUE)
+render_metadata(archive_path = NULL, validate = TRUE)
 }
 \arguments{
 \item{archive_path}{Path to the data archive/package directory.
 If NULL (default), uses current working directory.}
 
 \item{validate}{Logical. If TRUE (default), validates metadata before rendering.}
-
-\item{verbose}{Logical. If TRUE, prints resolved key mappings after rendering.}
 }
 \value{
 Invisibly returns the metadata as a list.

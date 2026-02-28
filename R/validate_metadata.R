@@ -17,8 +17,6 @@
 #' validate_metadata(list(title = list(en = "My Dataset"), ...))
 #' }
 validate_metadata <- function(meta, strict = TRUE) {
-
-
   if (is.character(meta) && length(meta) == 1 && file.exists(meta)) {
     meta <- read_yaml(meta)
   }
@@ -136,7 +134,6 @@ validate_metadata <- function(meta, strict = TRUE) {
 #' @return Character vector of errors (empty if valid).
 #' @keywords internal
 validate_multilingual_text <- function(obj, field_name) {
-
   errors <- character()
 
   if (!is.list(obj)) {
@@ -180,7 +177,6 @@ validate_multilingual_text <- function(obj, field_name) {
 #' @return Character vector of errors (empty if valid).
 #' @keywords internal
 validate_labels <- function(labels, path = "labels") {
-
   errors <- character()
   valid_codes <- get_iso_639_1_codes()
 
@@ -221,7 +217,6 @@ validate_labels <- function(labels, path = "labels") {
 #' @return Character vector of valid two-letter language codes.
 #' @keywords internal
 get_iso_639_1_codes <- function() {
-
   if (!requireNamespace("ISOcodes", quietly = TRUE)) {
     stop(
       "Package 'ISOcodes' is required for language code validation.\n",
@@ -246,7 +241,6 @@ get_iso_639_1_codes <- function() {
 #' list_language_codes()
 #' }
 list_language_codes <- function() {
-
   if (!requireNamespace("ISOcodes", quietly = TRUE)) {
     stop(
       "Package 'ISOcodes' is required.\n",
@@ -271,12 +265,11 @@ list_language_codes <- function() {
 #' @importFrom jsonlite fromJSON toJSON
 #' @export
 #' @examples
-#' \dontrun
+#'
 #' view_schema()
 #' schema <- view_schema(raw = TRUE)
-#' }
+#'
 view_schema <- function(raw = FALSE) {
-
   schema_path <- system.file(
     "schema/opentsi_metadata.schema.json",
     package = "deloRean"

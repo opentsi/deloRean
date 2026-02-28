@@ -16,3 +16,9 @@ Invisibly returns the schema as a list. Prints formatted output if raw=FALSE.
 Prints the OpenTSI metadata JSON schema to the console in a readable format.
 The schema defines the structure for dataset metadata files.
 }
+\examples{
+
+view_schema()
+schema <- view_schema(raw = TRUE)
+
+}
