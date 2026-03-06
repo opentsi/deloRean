@@ -7,7 +7,6 @@
 #' @export
 archive_init <- function(archive_name,
                          parent_dir = NULL,
-                         remote_owner = "opentsi",
                          rproj = TRUE,
                          use_gha = TRUE) {
   if (is.null(parent_dir)) {
@@ -133,8 +132,4 @@ msg <- sprintf("New opentimeseries archive '%s' created. Happy editing!",
         archive_name)
 message(msg)
 
-if (!is.null(remote_owner)) {
-  # push to Remote
-  # see Colin's slides.
-}
 }
