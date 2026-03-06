@@ -1,21 +1,26 @@
 
-#' This function returns a Long Format CSV of all series in the package
-#' you need to declare all imports needed
-#' Dont' forget to add imports to this function!
+#' Handle Data Update
+#'
+#' Orchestrates the update process: checks if update is needed,
+#' processes data, writes output, and stores the new checksum.
+#'
 #' @importFrom opentimeseries write_open_ts
 #' @export
-handle_update <- function(){
-
-  update_bool <- is_update_needed()
-
-  if(!update_bool){
+handle_update <- function() {
+  if (!is_update_needed()) {
     message("No update needed, series up-to-date.")
-    return(NULL)
+    return(invisible(NULL))
   }
 
-  tsx <- process_data()
+  # Compute checksum before processing (same value is_update_needed used)
+  new_checksum <- compute_source_checksum()
 
+  tsx <- process_data()
   write_open_ts(tsx)
 
+  # Store checksum after successful update
+  write_checksum(new_checksum)
+  message("Update complete, checksum stored.")
 
+  invisible(tsx)
 }

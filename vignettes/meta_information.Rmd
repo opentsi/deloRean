@@ -266,17 +266,6 @@ This:
 2. Validates the content
 3. Writes `inst/metadata.json`
 
-### Step 3: Timestamp Updates (Automated)
-
-During data updates (typically via GitHub Actions), the timestamp is updated:
-
-```{r}
-# In your update script (runs via GHA)
-opentimeseries::update_last_updated()
-```
-
-This adds/updates `last_updated` in the JSON file. The YAML source doesn't contain this field - it's auto-generated.
-
 ---
 
 ## Complete Example
@@ -382,4 +371,3 @@ deloRean::view_schema()
 | `read_meta()` | opentimeseries | Load metadata (local or remote) |
 | `get_keys()` | opentimeseries | Extract all keys |
 | `resolve_meta()` | opentimeseries | Map keys to labels |
-| `update_last_updated()` | opentimeseries | Stamp JSON with timestamp |
