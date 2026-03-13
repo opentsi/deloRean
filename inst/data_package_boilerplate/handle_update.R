@@ -1,26 +1,39 @@
-
 #' Handle Data Update
 #'
 #' Orchestrates the update process: checks if update is needed,
 #' processes data, writes output, and stores the new checksum.
 #'
-#' @importFrom opentimeseries write_open_ts
+#' @importFrom opentimeseries write_open_ts is_update_needed update_checksum
 #' @export
 handle_update <- function() {
-  if (!is_update_needed()) {
+
+  checksum <- generate_checksum_input()
+
+  if (!is_update_needed(checksum)) {
     message("No update needed, series up-to-date.")
     return(invisible(NULL))
   }
 
-  # Compute checksum before processing (same value is_update_needed used)
-  new_checksum <- compute_source_checksum()
+  # Edit R/process_data.R and enter a function
+  # that returns the most recent version of a time series
+  # from its original provider
+  process_data()
 
-  tsx <- process_data()
-  write_open_ts(tsx)
 
   # Store checksum after successful update
-  write_checksum(new_checksum)
+  update_checksum(checksum)
   message("Update complete, checksum stored.")
 
-  invisible(tsx)
+}
+
+
+#' User Written Function to Create Input for Checksum Comparison
+#'
+#' This function generates input for computation of checksums to identify
+#' outdated content. Good inputs are either publication dates extracted from
+#' official publisher sites or APIs or any single time series from a database,
+#' because opentsi definition all time series of the same dataset must
+#' have the same publication date.
+generate_checksum_input <- function(){
+
 }
