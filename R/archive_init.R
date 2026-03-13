@@ -93,13 +93,21 @@ if(use_gha){
   message("Basic GitHub Action for Updating data created.")
 }
 
+# Create inst directory for rendered metadata
+fs::dir_create(
+  file.path(archive_path, "inst")
+)
+
+
 # create a boilerplated R folder in the newly created package
 file_copy(system.file("data_package_boilerplate/handle_update.R",
                       package = "deloRean"),
           file.path(archive_path,"R"))
-file_copy(system.file("data_package_boilerplate/is_update_needed.R",
+
+file_copy(system.file("data_package_boilerplate/boilerplate.R",
                       package = "deloRean"),
-          file.path(archive_path,"R"))
+          file.path(archive_path,"inst"))
+
 
 file_copy(system.file("data_package_boilerplate/process_data.R",
                       package = "deloRean"),
@@ -119,10 +127,6 @@ file_copy(
 )
 message("Metadata template created at data-raw/metadata.yaml")
 
-# Create inst directory for rendered metadata
-fs::dir_create(
-  file.path(archive_path, "inst")
-)
 
 repo <- git_init(archive_path)
 git_add(files = ".", repo = repo)
