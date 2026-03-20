@@ -174,7 +174,7 @@ validate_metadata("~/opentsi/ch.provider.dataset/data-raw/metadata.yaml")
 render_metadata(repo_path = "~/opentsi/ch.provider.dataset/")
 ```
 
-### Initialize Checksum
+<!-- ### Initialize Checksum
 
 After importing history and rendering metadata, establish the baseline checksum.
 This prevents the first automated `handle_update()` from re-fetching data already in history:
@@ -183,6 +183,7 @@ This prevents the first automated `handle_update()` from re-fetching data alread
 # Run from within your archive directory
 init_checksum()
 ```
+ -->
 
 See `vignette("meta_information")` for the complete metadata specification.
 

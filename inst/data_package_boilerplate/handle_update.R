@@ -7,9 +7,9 @@
 #' @export
 handle_update <- function() {
 
-  checksum <- generate_checksum_input()
+  checksum_input <- generate_checksum_input()
 
-  if (!is_update_needed(checksum)) {
+  if (!is_update_needed(checksum_input)) {
     message("No update needed, series up-to-date.")
     return(invisible(NULL))
   }
