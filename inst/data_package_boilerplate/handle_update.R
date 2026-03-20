@@ -17,13 +17,14 @@ handle_update <- function() {
   # Edit R/process_data.R and enter a function
   # that returns the most recent version of a time series
   # from its original provider
-  process_data()
-
-
   # Store checksum after successful update
-  update_checksum(checksum)
+  upd <- update_checksum(checksum)
+  if(upd){
+    process_data("kofbarometer", ids = c("barometer"))
+  } else {
+    message("Checksum initialized. Data untouched.")
+  }
   message("Update complete, checksum stored.")
-
 }
 
 
