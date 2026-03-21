@@ -3,10 +3,12 @@ name: Update Data
 
 # workflow triggered both manually and by schedule
 on:
-  workflow-dispatch:
+  workflow_dispatch:
   schedule:
-    - cron:"15 4,5, * * *"
+    - cron: "15 4,5, * * *"
 # switching on to the above will trigger at 4:15, on every 5th day of the month
+
+
 
 
 jobs:
@@ -33,13 +35,16 @@ jobs:
         run: |
           R -e 'options("repos")'
       - name: Install packages
+      # if installation doesnt work via remotes::install_github, try with pak
+      # this is the original remotes installation
+      # R -q -e 'remotes::install_github("opentsi/opentimeseries")'
+      # R -q -e 'remotes::install_github("${{ github.repository }}")'
         run: |
           R -q -e 'install.packages("pak")'
           R -q -e 'pak::pkg_install("remotes")'
-          R -q -e 'remotes::install_github("opentsi/opentimeseries")'
-          R -q -e 'remotes::install_github("${{ github.repository }}")'
+          R -q -e 'pak::pkg_install("opentsi/opentimeseries")'
+          R -q -e 'pak::pkg_install("${{ github.repository }}")'
 
-      # TODO: build this R data package
       - name: handle_update
         run: |
           R -q -e '${{ github.event.repository.name }}::handle_update()'
