@@ -1,11 +1,14 @@
 name: Update Data
 
-on: workflow_dispatch
 
-# on:
-#   schedule:
-#     - cron:"15 4,5 * * *"
+# workflow triggered both manually and by schedule
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 4,5, * * *"
 # switching on to the above will trigger at 4:15, on every 5th day of the month
+
+
 
 
 jobs:
@@ -32,20 +35,27 @@ jobs:
         run: |
           R -e 'options("repos")'
       - name: Install packages
+      # if installation doesnt work via remotes::install_github, try with pak
+      # this is the original remotes installation
+      # R -q -e 'remotes::install_github("opentsi/opentimeseries")'
+      # R -q -e 'remotes::install_github("${{ github.repository }}")'
         run: |
           R -q -e 'install.packages("pak")'
           R -q -e 'pak::pkg_install("remotes")'
-          R -q -e 'remotes::install_github("opentsi/opentimeseries")'
+          R -q -e 'pak::pkg_install("opentsi/opentimeseries")'
+          R -q -e 'pak::pkg_install("${{ github.repository }}")'
 
-      # TODO: build this R data package
       - name: handle_update
         run: |
-          R -q -e '${{ github.repository }}:handle_update()'
-      - name: Push changes
-        run: |
-          git add -A
-          git commit -m "update data"
-      - name: Push changes
+          R -q -e '${{ github.event.repository.name }}::handle_update()'
+      - name: Commit and push changes (if any)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+        run: |
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "update data"
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
