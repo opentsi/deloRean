@@ -4,13 +4,7 @@
 \alias{archive_init}
 \title{Initialize a New Time Series Dataset Archive}
 \usage{
-archive_init(
-  archive_name,
-  parent_dir = NULL,
-  remote_owner = "opentsi",
-  rproj = TRUE,
-  use_gha = TRUE
-)
+archive_init(archive_name, parent_dir = NULL, rproj = TRUE, use_gha = TRUE)
 }
 \description{
 Initialize a New Time Series Dataset Archive

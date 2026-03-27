@@ -73,7 +73,7 @@ jobs:
 Note the use of ARM and alpine images here. Alpine is often called "the operating system of CI/CD" and is known for it's slim, resourcing saving image. 
 Those more bare bone images require you to install system packages.
 and to clone your repository to the container. 
-We install the `pak` R package for package management and use it to install `opentimeseries` directly from its GitHub repository because our dataset package depends on opentimeseries which is not on CRAN yet. Hence `pak`  can not resolve the dependency automatically through the R ecosystem. 
+We install the `pak` R package for package management and use it to install opentimeseries and your data package directly from its GitHub repository (because it's not on CRAN) yet. Hence `pak`  can not resolve the dependency automatically through the R ecosystem. 
 
 
 
@@ -94,26 +94,30 @@ We install the `pak` R package for package management and use it to install `ope
           R -q -e 'install.packages("pak")'
           R -q -e 'pak::pkg_install("remotes")'
           R -q -e 'remotes::install_github("opentsi/opentimeseries")'
+          R -q -e 'remotes::install_github("${{ github.repository }}")'
 
 ```
 
 Once we got opentimeseries we can run the `handle_update` function which is part of our boilerplate generated data package, in our case `ch.kof.globalbaro`.
-Once the update is done and it's part of the cloned repository that lives inside the actions runner container, we can add and commit the changes and eventually push the data update back up to the GitHub repository. 
+Once the update is done and it's part of the cloned repository that lives inside the actions runner container, we can add and commit the changes, if there are any^[In case you don't know when exactly the data provider publishes the new data, so you want your GHA script to run on multiple days, and then sometimes there are no changes and nothing to push] and eventually push the data update back up to the GitHub repository. 
 
 
 ```yaml
 
       - name: handle_update
         run: |
-          R -q -e '${{ github.repository }}::handle_update()'
-      - name: Push changes
-        run: |
-          git add -A
-          git commit -m "update data"
-      - name: Push changes
+          R -q -e '${{ github.event.repository.name }}::handle_update()'
+      - name: Commit and push changes (if any)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+        run: |
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "update data"
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
 ```
 
 
@@ -171,7 +175,7 @@ Your data R package currently looks like this:
 │   ├── handle_update.R
 │   ├── is_update_needed.R
 │   ├── process_data.R
-│   ├── dataset_write.R # previously (`dataset_update.R`)
+│   ├── dataset_write.R # previously (`dataset_update.R`) -> don't we get this from opentimeseries::write_open_ts
 ├── README.md
 ```
 
@@ -221,5 +225,24 @@ To be able to use your newly created data package well, you need to understand, 
 - specify cron job (if deloRean default doesn't work for you)
 - specify which R pkgs you need to install
 
+
+### Finishing Touches:
+
+Now that you have understood the boilerplating we provided you with, and also implemented the tasks from the previous vignettes, it's time to put your automation into action, and let your dataset be updated automatically.
+
+To be able to put the github-actions (GHA) script `ci.yaml` into use, however, you need to do the following things:
+
+1. Make sure your **data package is ready for "production"**.
+2. Make sure your **GHA is running**
+
+#### Share your Data Package
+
+To do this, you need to load (and install) the devtools package, via `library(devtools)`. By running `load_all()` you will load your package, then by running `check()` you will build and check the package, and finally, by running `install()` you will install your package and it's dependencies. Once all these steps are complete, you can ensure that your GHA script will also be able to install your package (see the GHA explanation above). 
+
+#### Setup the GHA in your account
+
+Since there is a bot configured in the script above, which handles pushing new changes of your dataset to the repository, you need to ensure that this bot has permissions to write changes to your repository. 
+
+If you are pushing the data package to your own repository, you can verify this under your repository's Settings > Actions > General. There you should set the Workflow permissions s.t. there is read and write permissions for your GHA workflows.
 
 <!-- ### TODO: timeseries specific metadata information (write boilerplated & docs for end-users) -->

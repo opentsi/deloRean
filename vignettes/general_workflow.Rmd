@@ -1,0 +1,278 @@
+---
+title: "General Workflow"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{General Workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+This vignette describes the complete workflow for creating and publishing a time series archive using deloRean and the Open Time Series Initiative (opentsi).
+
+## Workflow Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         deloRean Workflow                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+     LOCAL DEVELOPMENT                          GITHUB / OPENTSI
+     ─────────────────                          ─────────────────
+
+    ┌─────────────────┐
+    │  1. Init        │
+    │     Archive     │
+    └────────┬────────┘
+             │
+             ▼
+    ┌─────────────────┐
+    │  2. Import      │
+    │     History     │
+    └────────┬────────┘
+             │
+             ▼
+    ┌─────────────────┐
+    │  3. Add Update  │
+    │     Process &   │
+    │     Metadata    │
+    └────────┬────────┘
+             │
+             │                              ┌─────────────────┐
+             │  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ▶ │  4. Push to     │
+             │       create repo first      │     GitHub      │
+             │       on github.com/new      │  (your account) │
+             │                              └────────┬────────┘
+             │                                       │
+             ▼                                       ▼
+    ┌─────────────────┐                     ┌─────────────────┐
+    │  Test & Refine  │◀ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─│  GitHub Actions │
+    │  Locally        │      CI feedback    │  runs updates   │
+    └─────────────────┘                     └────────┬────────┘
+                                                     │
+                                                     ▼
+                                            ┌─────────────────┐
+                                            │  5. Request     │
+                                            │     Listing     │
+                                            └────────┬────────┘
+                                                     │
+                                                     ▼
+                                            ┌─────────────────┐
+                                            │  6. Transfer    │
+                                            │     to opentsi  │
+                                            └─────────────────┘
+
+```
+
+### Summary
+
+| Step | Action | Documentation |
+|------|--------|---------------|
+| 1 | Initialize archive | `vignette("initialise_a_ts_archive")` |
+| 2 | Import history | `vignette("initialise_a_ts_archive")` |
+| 3 | Add update process | `vignette("write_your_process_data")`, `vignette("automation_of_updates")` |
+| 3 | Add metadata | `vignette("meta_information")` |
+| 4 | Push to GitHub | [github.com/new](https://github.com/new) |
+| 5 | Request listing | [GitHub Issue](https://github.com/opentsi/opentsi/issues/new) |
+| 6 | Transfer repository | [GitHub Docs: Transferring a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/transferring-a-repository) |
+
+
+## Step 1: Initialize Archive
+
+Create a new time series archive using `archive_init()`. This sets up the R package structure with all necessary boilerplate files.
+
+```{r}
+library(deloRean)
+
+# Create a new archive
+archive_init(
+  archive_name = "ch.provider.dataset",
+  parent_dir = "~/opentsi/"
+)
+```
+
+This creates:
+
+```
+ch.provider.dataset/
+├── .git/
+├── .github/workflows/
+│   └── update_data.yaml
+├── data-raw/
+│   └── metadata.yaml
+├── inst/
+├── R/
+│   ├── handle_update.R
+│   ├── is_update_needed.R
+│   └── process_data.R
+├── DESCRIPTION
+├── NAMESPACE
+└── README.md
+```
+
+See `vignette("initialise_a_ts_archive")` for details.
+
+
+## Step 2: Import Historical Data
+
+If you have historical vintages of your time series, import them with proper timestamps using `archive_import_history()`. Each vintage gets its own commit with the correct release date.
+
+```{r}
+# Prepare your vintages as a nested data.table
+vintages_dt <- create_vintage_dt(release_dates, time_series_list)
+
+# Import with historical commit dates
+archive_import_history(
+  vintages_dt,
+  repository_path = "~/opentsi/ch.provider.dataset/"
+)
+```
+
+This creates a git history where each commit represents a data release at its actual release date.
+
+
+## Step 3: Add Update Process and Metadata
+
+### Edit the Update Scripts
+
+Customize the boilerplate R scripts in your archive:
+
+- **`R/process_data.R`**: Fetch and transform data from the provider
+- **`R/is_update_needed.R`**: Contains `compute_source_checksum()` - customize this to define how to detect source changes
+- **`R/handle_update.R`**: Orchestrates the update process (usually no changes needed)
+
+See `vignette("write_your_process_data")` and `vignette("automation_of_updates")` for details.
+
+### Complete the Metadata
+
+Edit `data-raw/metadata.yaml` with your dataset's information:
+
+```yaml
+country: "ch"
+provider: "provider_name"
+dataset: "dataset_name"
+title:
+  en: "Dataset Title in English"
+  de: "Datensatz Titel auf Deutsch"
+source_name:
+  en: "Data Provider Name"
+source_url: "https://provider.example.com/data"
+dataset_frequency: "M"  # D, W, M, Q, Y, or I
+```
+
+Validate and render the metadata:
+
+```{r}
+validate_metadata("~/opentsi/ch.provider.dataset/data-raw/metadata.yaml")
+render_metadata(repo_path = "~/opentsi/ch.provider.dataset/")
+```
+
+<!-- ### Initialize Checksum
+
+After importing history and rendering metadata, establish the baseline checksum.
+This prevents the first automated `handle_update()` from re-fetching data already in history:
+
+```{r}
+# Run from within your archive directory
+init_checksum()
+```
+ -->
+
+See `vignette("meta_information")` for the complete metadata specification.
+
+
+## Step 4: Register Remote and Push to GitHub
+
+### Create the GitHub Repository
+
+1. Go to [github.com/new](https://github.com/new)
+2. Enter your archive name as repository name (e.g., `ch.provider.dataset`)
+3. Choose **Public** (recommended for open data) or Private
+4. **Do NOT** initialize with README, .gitignore, or license (your archive already has these)
+5. Click **Create repository**
+
+### Push Your Archive
+
+```{r}
+archive_push_remote(
+  repo_path = "~/opentsi/ch.provider.dataset",
+  remote_owner = "your_github_username"
+)
+```
+
+For SSH (default), ensure your SSH keys are configured with GitHub. For HTTPS:
+
+```{r}
+archive_push_remote(
+  repo_path = "~/opentsi/ch.provider.dataset",
+  remote_owner = "your_github_username",
+  protocol = "https"
+)
+```
+
+### Enable GitHub Actions
+
+Go to your repository on GitHub → **Actions** tab → Enable workflows if prompted.
+
+The included workflow will automatically run your update process on a schedule.
+
+
+## Step 5: Request Listing in opentsi
+
+Once your archive is working and regularly updating, request to be listed in the opentsi catalog:
+
+1. Go to [github.com/opentsi/opentsi](https://github.com/opentsi/opentsi) (or the appropriate registry repo)
+2. Open an issue using the "Dataset Listing Request" template
+3. Provide:
+   - Link to your repository
+   - Brief description of the dataset
+   - Confirmation that metadata is complete and valid
+   - Your contact information
+
+An opentsi maintainer will review your submission.
+
+
+## Step 6: Transfer Repository and Become a Maintainer
+
+After your listing request is approved:
+
+### Transfer Your Repository to opentsi
+
+1. Go to your repository → **Settings**
+2. Scroll to **Danger Zone** → **Transfer repository**
+3. Enter `opentsi` as the new owner
+4. Confirm the transfer
+
+An opentsi admin will accept the transfer. Your repository will move to `github.com/opentsi/ch.provider.dataset`, and the old URL will automatically redirect.
+
+### Maintainer Access
+
+After the transfer, opentsi admins will grant you maintainer access to your dataset repository so you can continue to:
+
+- Update the data processing scripts
+- Respond to issues
+- Review contributions from others
+
+
+## Workflow for opentsi Admins
+
+If you are an opentsi admin creating an official dataset, you can skip the personal account step:
+
+1. Create the repository directly under the opentsi organization
+2. Push directly with `remote_owner = "opentsi"`:
+
+```{r}
+archive_push_remote(
+  repo_path = "~/opentsi/ch.provider.dataset",
+  remote_owner = "opentsi"
+)
+```
+
+

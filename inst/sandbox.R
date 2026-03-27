@@ -31,6 +31,12 @@ vintages_dt <- create_vintage_dt(release_dates, global)
 archive_import_history(vintages_dt, "../ch.kof.globalbaro/")
 
 
+
+
+
+
+
+
 debug(write_current_dt)
 write_current_dt(single_dt, repo_name = "ch.kof.globalbaro")
 

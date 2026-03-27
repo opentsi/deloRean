@@ -3,11 +3,10 @@
 #'
 #' @importFrom fs dir_create file_touch file_copy file_move
 #' @importFrom usethis use_data_raw use_directory create_package
-#' @importFrom gert git_init
+#' @importFrom gert git_init git_add git_commit
 #' @export
 archive_init <- function(archive_name,
                          parent_dir = NULL,
-                         remote_owner = "opentsi",
                          rproj = TRUE,
                          use_gha = TRUE) {
   if (is.null(parent_dir)) {
@@ -94,13 +93,21 @@ if(use_gha){
   message("Basic GitHub Action for Updating data created.")
 }
 
+# Create inst directory for rendered metadata
+fs::dir_create(
+  file.path(archive_path, "inst")
+)
+
+
 # create a boilerplated R folder in the newly created package
 file_copy(system.file("data_package_boilerplate/handle_update.R",
                       package = "deloRean"),
           file.path(archive_path,"R"))
-file_copy(system.file("data_package_boilerplate/is_update_needed.R",
+
+file_copy(system.file("data_package_boilerplate/boilerplate.R",
                       package = "deloRean"),
-          file.path(archive_path,"R"))
+          file.path(archive_path,"inst"))
+
 
 file_copy(system.file("data_package_boilerplate/process_data.R",
                       package = "deloRean"),
@@ -113,6 +120,12 @@ fs::dir_create(
   )
 )
 
+# Copy metadata template
+file_copy(
+  system.file("templates/metadata_template.yaml", package = "deloRean"),
+  file.path(archive_path, "data-raw", "metadata.yaml")
+)
+message("Metadata template created at data-raw/metadata.yaml")
 
 
 repo <- git_init(archive_path)
@@ -123,8 +136,4 @@ msg <- sprintf("New opentimeseries archive '%s' created. Happy editing!",
         archive_name)
 message(msg)
 
-if (!is.null(remote_owner)) {
-  # push to Remote
-  # see Colin's slides.
-}
 }

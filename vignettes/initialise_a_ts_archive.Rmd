@@ -45,6 +45,7 @@ This creates a new R package in the specified location. Check it out by navigati
 
 ```
 ├── data-raw
+│   ├── metadata.yaml
 ├── DESCRIPTION
 ├── NAMESPACE
 ├── R

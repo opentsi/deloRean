@@ -2,6 +2,8 @@
 .Rhistory
 .Rapp.history
 
+mi.md
+
 # Session Data files
 .RData
 .RDataTmp
@@ -48,3 +50,5 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 .Rproj.user
+docs
+inst/doc
