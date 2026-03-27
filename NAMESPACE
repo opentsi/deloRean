@@ -3,6 +3,7 @@
 export(archive_import_history)
 export(archive_init)
 export(archive_push_remote)
+export(archive_seal)
 export(create_vintage_dt)
 export(list_language_codes)
 export(render_metadata)

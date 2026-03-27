@@ -35,13 +35,8 @@ jobs:
         run: |
           R -e 'options("repos")'
       - name: Install packages
-      # if installation doesnt work via remotes::install_github, try with pak
-      # this is the original remotes installation
-      # R -q -e 'remotes::install_github("opentsi/opentimeseries")'
-      # R -q -e 'remotes::install_github("${{ github.repository }}")'
         run: |
           R -q -e 'install.packages("pak")'
-          R -q -e 'pak::pkg_install("remotes")'
           R -q -e 'pak::pkg_install("opentsi/opentimeseries")'
           R -q -e 'pak::pkg_install("${{ github.repository }}")'
 
