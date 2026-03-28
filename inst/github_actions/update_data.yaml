@@ -5,8 +5,8 @@ name: Update Data
 on:
   workflow_dispatch:
   schedule:
-    - cron: "15 4,5, * * *"
-# switching on to the above will trigger at 4:15, on every 5th day of the month
+    - cron: "0 10 1,5,15 * *"
+# triggers at 10:00 AM UTC on the 1st, 5th, and 15th of every month
 
 
 
