@@ -40,7 +40,7 @@ archive_init <- function(archive_name,
 ```r
 ts <- read_open_ts(
   \"%s\",
-  archive= \"opentsi\" # or your organisation
+  remote_archive= \"opentsi\" # or your organisation
 )
 
 ts
