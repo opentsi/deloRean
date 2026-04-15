@@ -21,10 +21,10 @@ Load the necessary packages for this reprex
 ```{r setup}
 library(remotes)
 
-install_github("opentsi/opentimeseries",ref = "experiment/opencode")
 install_github("opentsi/deloRean", ref = "cleanup")
 library(deloRean)
 ```
+
 
 
 To initialise the repo, input name of new repo, and location to put it, and set env. vars.
@@ -38,6 +38,8 @@ Sys.setenv("DELOREAN_EMAIL" = "bannert@kof.ethz.ch")
 Sys.setenv("DELOREAN_AUTHOR" = "Open Time Series Initiative")
 Sys.setenv("DELOREAN_SSH_KEY" = "~/.ssh/id_rsa")
 ```
+
+<!-- strange that i can only archive_init when i am in a project myself see usethis::project_get() for info -->
 
 This creates a new R package in the specified location. Check it out by navigating to that location, and inspecting the files. You should see the following directory structure under `ch.kof.globalbaro`:
 
@@ -132,8 +134,6 @@ Date:   Fri Jul 11 01:59:59 2025 +0200
 commit 04acff142152d794d37fc05c77d77b5a6b35abd2
 Author: Open Time Series Initiative <bannert@kof.ethz.ch>
 ```
-
-<!-- TODO: include code block to see git log-->
 
 <!-- 
 Once you have initialised the data package and added the commit history, you can put inplace the processing script, which is responsible for re-fetching the new data, this should be written in the `process_data.R` file. This file could look as follows:

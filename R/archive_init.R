@@ -40,7 +40,7 @@ archive_init <- function(archive_name,
 ```r
 ts <- read_open_ts(
   \"%s\",
-  archive= \"opentsi\" # or your organisation
+  remote_archive= \"opentsi\" # or your organisation
 )
 
 ts
@@ -113,6 +113,12 @@ file_copy(system.file("data_package_boilerplate/process_data.R",
                       package = "deloRean"),
           file.path(archive_path,"R"))
 
+# adding claude.md as boilerplate
+file_copy(system.file("data_package_boilerplate/CLAUDE.md",
+                      package = "deloRean"),
+          file.path(archive_path))
+
+  
 
 fs::dir_create(
   file.path(

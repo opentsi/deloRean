@@ -5,10 +5,12 @@ name: Update Data
 on:
   workflow_dispatch:
   schedule:
-    - cron: "15 4,5, * * *"
-# switching on to the above will trigger at 4:15, on every 5th day of the month
+    - cron: "0 10 1,5,15 * *"
+# triggers at 10:00 AM UTC on the 1st, 5th, and 15th of every month
 
 
+permissions:
+  contents: write  # grants the GITHUB_TOKEN write access to the repo (allows automatic updates to happen)
 
 
 jobs:
@@ -35,13 +37,8 @@ jobs:
         run: |
           R -e 'options("repos")'
       - name: Install packages
-      # if installation doesnt work via remotes::install_github, try with pak
-      # this is the original remotes installation
-      # R -q -e 'remotes::install_github("opentsi/opentimeseries")'
-      # R -q -e 'remotes::install_github("${{ github.repository }}")'
         run: |
           R -q -e 'install.packages("pak")'
-          R -q -e 'pak::pkg_install("remotes")'
           R -q -e 'pak::pkg_install("opentsi/opentimeseries")'
           R -q -e 'pak::pkg_install("${{ github.repository }}")'
 

@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 
 ## Context:
 
-Assume you are a research assistant, tasked with downloading and processing the latest time series vintage, so that it can be later used for analyses. Assuming you already know the dataset you need to fetch, and the data source which publishes it. 
+Assume you are a research assistant, tasked with downloading and processing the **latest** time series vintage, so that it can be later used for analyses. Assuming you already know the dataset you need to fetch, and the data source which publishes it. 
 
 Let's go through this process, by assuming you want to fetch and process the [KOF's Global Barometer](https://kof.ethz.ch/en/forecasts-and-indicators/indicators/kof-globalbaro.html) which are a system of indicators that enables a timely analysis of global economic development. You know that the KOF Institute publishes this dataset, and you know that there are 2 main ways to fetch it. Let's go through them.
 
@@ -28,7 +28,7 @@ Assuming that you know that the global barometer is timeseries list, consisting 
 
 Since there exists a KOF API wrapper in R, you can use this to import and then process your data
 
-
+<!-- check boilerplating from process_data in initialised folder. include opentimeseries key_to_path -->
 ```{r message= FALSE}
 library(kofdata)
 
@@ -63,7 +63,7 @@ process_data <- function(key, ids = NULL){
 
   # since we return a tsl, all we need to do to finish processing is remove the suffix for each key 
   # (to write the data properly later)
-  names(res_tsl) <- sub("_", ".", sub("_[0-9]{4}-[0-9]{2}$", "", names(res_tsl)))
+  names(res_tsl) <- sapply(strsplit(names(res_tsl), "_"), `[`, 2)
 
   return(res_tsl)
 }
@@ -148,7 +148,7 @@ process_data <- function(key, ids = NULL){
   tsl_subset <- tsl[last_names]
 
   # clean names, to write_open_ts seamlessly later
-  names(tsl_subset) <- sub("_", ".", sub("_[0-9]{4}-[0-9]{2}$", "", names(tsl_subset)))
+  names(res_tsl) <- sapply(strsplit(names(res_tsl), "_"), `[`, 2)
 
   return(tsl_subset)
 
@@ -163,3 +163,63 @@ ts.plot(ts_matrix, col = 1:ncol(ts_matrix))
 
 This is how you could write a `process_data` function, which gets the globalbaro vintages, and also transforms them into the timeseries list format. 
 
+Please remember to put this function into the process_data.R file, which was created upon initialising this archive. Follow the vignette `initialise_a_ts_archive.Rmd` if that is not the case. 
+
+<!-- TODO: finish this example. still need to include opentimeseries::key_to_path() and mapping latest imported ts to said key_path -->
+
+
+### Finishing Touches
+
+But we are not quite done yet. Now you have seen how to get the latest time series vintages of ch.kof.globalbaro, but the process data step is only done when the data is written to its designated spot. In our case:
+
+```
+├── data-raw
+│   ├── coincident
+│   │   ├── series.csv
+│   ├── leading
+│   │   ├── series.csv
+│   ├── index.csv
+├── DESCRIPTION
+├── NAMESPACE
+├── R
+│   ├── handle_update.R
+│   ├── is_update_needed.R
+│   ├── process_data.R
+├── README.md
+```
+
+Our data needs to go into the respective `series.csv` files, of each sepeater sub-key.
+
+To do this, we need to add the following code to our above implementation, before the final `return(res_tbl)` line:
+
+<!-- TODO: where key_to_path usage??? -->
+
+```{r}
+
+# Write each time series to series.csv in the corresponding directory
+lapply(names(res_tsl), function(key) {
+  # get ts$key
+  ts_obj <- res_tsl[[key]]
+
+  # Convert ts object to data frame with time and value columns
+  # Extract time index and values from the ts object
+  values <- as.numeric(ts_obj)
+
+  ts_dates <- as.Date(lubridate::date_decimal(as.numeric(time(ts_obj))))
+
+  # Create data frame in the format of the input file
+  ts_df <- data.frame(
+    time = as.Date(ts_dates),
+    value = values
+  )
+
+  # Create path to write file
+  output_path <- file.path(getwd(), "data-raw", key, "series.csv")
+
+  # Write to CSV without row names
+  write.csv(ts_df, file = output_path, row.names = FALSE)
+})
+
+```
+
+This code snippet ensures that for each key in the dataset (here, coincident, leading), the data for this sub-key is written in the correct format ,as previously written, to `series.csv`.

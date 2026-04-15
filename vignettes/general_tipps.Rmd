@@ -1,0 +1,14 @@
+---
+title: "General Tipps"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{general_tipps}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+### Naming Convention for Repositories
+
+- MUST: repository names need to be unique
+- Recommendation: we suggest using the dataset key as a name, i.e. `ch.kof.globalbaro` is both the key, and the repo name.
+
