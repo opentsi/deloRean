@@ -2,7 +2,7 @@
 #'
 #'
 #' @importFrom fs dir_create file_touch file_copy file_move
-#' @importFrom usethis use_data_raw use_directory create_package
+#' @importFrom usethis create_package
 #' @importFrom gert git_init git_add git_commit
 #' @export
 archive_init <- function(archive_name,
@@ -38,9 +38,12 @@ archive_init <- function(archive_name,
 
 
 ```r
+remotes::install_github(\"opentsi/opentimeseries\")
+library(opentimeseries)
+
 ts <- read_open_ts(
-  \"%s\",
-  remote_archive= \"opentsi\" # or your organisation
+  series = NULL, # fetches all as default
+  remote_archive= \"opentsi/%s\" # or your organisation
 )
 
 ts
@@ -71,7 +74,11 @@ create_package(
   )
 )
 
-
+# appends .claude to the .gitignore file inside the new archive_path
+git_ignore_path <- file.path(archive_path, ".gitignore")
+if (file.exists(git_ignore_path)) {
+  cat(".claude", file = git_ignore_path, append = TRUE)
+}
 
 readme_loc <- file.path(archive_path, "README.md")
 file_touch(readme_loc)
