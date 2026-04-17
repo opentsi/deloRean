@@ -34,6 +34,8 @@ archive_init <- function(archive_name,
 
 ## Browse Time Series Data
 
+You can use GitHub's ability to render to csv to explore the datasets
+
 ## Basic Data Consumption via opentimeseries
 
 
@@ -41,16 +43,14 @@ archive_init <- function(archive_name,
 remotes::install_github(\"opentsi/opentimeseries\")
 library(opentimeseries)
 
+# first param `series` defaults to NULL
+# fetches all series from `remove_archive``
 ts <- read_open_ts(
-  series = NULL, # fetches all as default
-  remote_archive= \"opentsi/%s\" # or your organisation
+  remote_archive = \"opentsi/%s\" 
 )
 
 ts
 ```
-
-## The %s Data R Package
-
 ",
   archive_name,
   generic_desc_no_ls,
