@@ -54,7 +54,6 @@ ts
 ",
   archive_name,
   generic_desc_no_ls,
-  archive_name,
   archive_name
   )
 
@@ -132,7 +131,20 @@ fs::dir_create(
     archive_path,"data-raw"
   )
 )
+# add new metadata structure files
+  fs::dir_create(
+  file.path(
+    archive_path,"data-raw/csv"
+  )
+)
+message("csv folder created at data-raw/csv")
 
+file_copy(
+  system.file("data_package_boilerplate/index.md", package = "deloRean"),
+  file.path(archive_path, "data-raw", "index.md")
+)
+message("Metadata template created at data-raw/index.md")
+  
 # Copy metadata template
 file_copy(
   system.file("templates/metadata_template.yaml", package = "deloRean"),
