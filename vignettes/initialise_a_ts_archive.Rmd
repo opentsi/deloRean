@@ -21,7 +21,7 @@ Load the necessary packages for this reprex
 ```{r setup}
 library(remotes)
 
-install_github("opentsi/deloRean", ref = "cleanup")
+install_github("opentsi/deloRean")
 library(deloRean)
 ```
 
