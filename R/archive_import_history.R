@@ -47,7 +47,7 @@ archive_import_history <- function(history_dt,
   }, "")
 
   update_index_section(index_md_path, "Hierarchy", build_hierarchy(uk))
-  
+
   for(rd in u){
     sig <- git_signature("Open Time Series Initiative",
                                "bannert@kof.ethz.ch",
@@ -82,22 +82,22 @@ archive_import_history <- function(history_dt,
 # setwd("/Users/minna/KOF_Lab/opentsi/ch.kof.globalbaro")
 
 # archive_init("ch.kof.globalbaro", "~/KOF_Lab/opentsi")
-library(kofdata)
-library(data.table)
-library(tsbox)
+# library(kofdata)
+# library(data.table)
+# library(tsbox)
 
-global <- get_collection("globalbaro_vintages")
-names(global) <- gsub("globalbaro_","",names(global))
-names(global) <- sub("_", "\\.", names(global))
-class(global) <- c(class(global), "tslist")
-release_dates <- rep(seq(as.Date("2020-01-10"),
-                         by = "1 month",
-                         length.out = length(global)/2),2)
-vintages_dt <- create_vintage_dt(release_dates, global)
-head(vintages_dt)
+# global <- get_collection("globalbaro_vintages")
+# names(global) <- gsub("globalbaro_","",names(global))
+# names(global) <- sub("_", "\\.", names(global))
+# class(global) <- c(class(global), "tslist")
+# release_dates <- rep(seq(as.Date("2020-01-10"),
+#                          by = "1 month",
+#                          length.out = length(global)/2),2)
+# vintages_dt <- create_vintage_dt(release_dates, global)
+# head(vintages_dt)
 
-## Example Step 3, Import History to Archive
-# debugonce(archive_import_history)
-archive_import_history(vintages_dt, repository_path = "~/KOF_Lab/opentsi/ch.kof.globalbaro")
+# ## Example Step 3, Import History to Archive
+# # debugonce(archive_import_history)
+# archive_import_history(vintages_dt, repository_path = "~/KOF_Lab/opentsi/ch.kof.globalbaro")
 
 # # source("/Users/minna/KOF_Lab/opentsi/deloRean/R/archive_import_history.R")
