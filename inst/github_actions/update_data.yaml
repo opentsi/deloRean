@@ -15,7 +15,7 @@ on:
 
 jobs:
   setup:
-    runs-on: ubuntu-22.04-arm
+    runs-on: ubuntu-latest
     container: devxygmbh/r-alpine:4-3.21
     steps:
       - name: Manual Checkout
