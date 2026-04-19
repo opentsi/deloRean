@@ -8,9 +8,9 @@ on:
     - cron: "0 10 1,5,15 * *"
 # triggers at 10:00 AM UTC on the 1st, 5th, and 15th of every month
 
-
-permissions:
-  contents: write  # grants the GITHUB_TOKEN write access to the repo (allows automatic updates to happen)
+# needed only for transfer
+# permissions:
+#   contents: write  # grants the GITHUB_TOKEN write access to the repo (allows automatic updates to happen)
 
 
 jobs:
