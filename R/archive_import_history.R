@@ -72,32 +72,3 @@ archive_import_history <- function(history_dt,
                      repo = repository_path)
   }
 }
-
-# before
-# setwd("/Users/minna/KOF_Lab/opentsi/deloRean")
-# devtools::load_all()
-
-# # testing 
-# debugonce(archive_import_history)
-# setwd("/Users/minna/KOF_Lab/opentsi/ch.kof.globalbaro")
-
-# archive_init("ch.kof.globalbaro", "~/KOF_Lab/opentsi")
-# library(kofdata)
-# library(data.table)
-# library(tsbox)
-
-# global <- get_collection("globalbaro_vintages")
-# names(global) <- gsub("globalbaro_","",names(global))
-# names(global) <- sub("_", "\\.", names(global))
-# class(global) <- c(class(global), "tslist")
-# release_dates <- rep(seq(as.Date("2020-01-10"),
-#                          by = "1 month",
-#                          length.out = length(global)/2),2)
-# vintages_dt <- create_vintage_dt(release_dates, global)
-# head(vintages_dt)
-
-# ## Example Step 3, Import History to Archive
-# # debugonce(archive_import_history)
-# archive_import_history(vintages_dt, repository_path = "~/KOF_Lab/opentsi/ch.kof.globalbaro")
-
-# # source("/Users/minna/KOF_Lab/opentsi/deloRean/R/archive_import_history.R")
