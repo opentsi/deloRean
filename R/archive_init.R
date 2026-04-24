@@ -57,6 +57,15 @@ ts
   archive_name
   )
 
+index_md_content <- sprintf(
+"
+## Index of Time Series in %s
+
+",
+  archive_name
+)
+
+
 create_package(
   path = archive_path,
   rstudio = rproj,
@@ -139,10 +148,12 @@ fs::dir_create(
 )
 message("csv folder created at data-raw/csv")
 
-file_copy(
-  system.file("data_package_boilerplate/index.md", package = "deloRean"),
-  file.path(archive_path, "data-raw", "index.md")
-)
+index_loc <- file.path(archive_path,"data-raw", "index.md")
+file_touch(index_loc)
+file_con <- file(index_loc, "w")
+writeLines(index_md_content, file_con)
+close(file_con)
+
 message("Metadata template created at data-raw/index.md")
   
 # Copy metadata template
