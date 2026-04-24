@@ -34,6 +34,8 @@ archive_init <- function(archive_name,
 
 ## Browse Time Series Data
 
+You can use GitHub's ability to render to csv to explore the datasets
+
 ## Basic Data Consumption via opentimeseries
 
 
@@ -41,22 +43,28 @@ archive_init <- function(archive_name,
 remotes::install_github(\"opentsi/opentimeseries\")
 library(opentimeseries)
 
+# first param `series` defaults to NULL
+# fetches all series from `remove_archive``
 ts <- read_open_ts(
-  series = NULL, # fetches all as default
-  remote_archive= \"opentsi/%s\" # or your organisation
+  remote_archive = \"opentsi/%s\" 
 )
 
 ts
 ```
-
-## The %s Data R Package
-
 ",
   archive_name,
   generic_desc_no_ls,
-  archive_name,
   archive_name
   )
+
+index_md_content <- sprintf(
+"
+## Index of Time Series in %s
+
+",
+  archive_name
+)
+
 
 create_package(
   path = archive_path,
@@ -132,7 +140,22 @@ fs::dir_create(
     archive_path,"data-raw"
   )
 )
+# add new metadata structure files
+  fs::dir_create(
+  file.path(
+    archive_path,"data-raw/csv"
+  )
+)
+message("csv folder created at data-raw/csv")
 
+index_loc <- file.path(archive_path,"data-raw", "index.md")
+file_touch(index_loc)
+file_con <- file(index_loc, "w")
+writeLines(index_md_content, file_con)
+close(file_con)
+
+message("Metadata template created at data-raw/index.md")
+  
 # Copy metadata template
 file_copy(
   system.file("templates/metadata_template.yaml", package = "deloRean"),
