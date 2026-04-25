@@ -28,7 +28,7 @@ build_hierarchy <- function(ids, depth = 1L) {
 # Everything between the section header and the next ## header is overwritten.
 update_index_section <- function(index_path, section, new_lines) {
   txt <- readLines(index_path, warn = FALSE)
-  h_idx <- grep(paste0("^## ", section, "\\s*$"), txt)[[1L]]
+  h_idx <- grep(paste0("^## ", section), txt)[[1L]]
   next_h <- grep("^## ", txt)
   next_h <- next_h[next_h > h_idx]
   end_idx <- if (length(next_h) > 0L) next_h[[1L]] - 1L else length(txt)

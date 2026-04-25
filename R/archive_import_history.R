@@ -30,23 +30,9 @@ archive_import_history <- function(history_dt,
   # fill index.md sections: hierarchy + series table + vintage dates
   index_md_path <- file.path(repository_path, "data-raw", "index.md")
 
-  series_info <- lapply(uk, function(id_val) {
-    rows <- history_dt[id == id_val]
-    latest_data <- rows[which.max(release_date)]$data[[1]]
-    list(
-      id         = id_val,
-      n_vintages = nrow(rows),
-      date_min   = format(min(latest_data$time), "%Y-%m-%d"),
-      date_max   = format(max(latest_data$time), "%Y-%m-%d")
-    )
-  })
-
-  table_rows <- vapply(series_info, function(s) {
-    sprintf("| `%s` | %d | %s \u2013 %s | [CSV](csv/%s.csv) |",
-            s$id, s$n_vintages, s$date_min, s$date_max, s$id)
-  }, "")
-
-  update_index_section(index_md_path, "Hierarchy", build_hierarchy(uk))
+  update_index_section(index_md_path, "Index of Time Series", build_hierarchy(uk))
+  
+  message("Keys written into index.md")
 
   for(rd in u){
     sig <- git_signature("Open Time Series Initiative",
