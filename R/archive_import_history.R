@@ -14,16 +14,6 @@ archive_import_history <- function(history_dt,
   uk <- unique(history_dt$id)
   keys <- sprintf("%s.%s", dataset_name, uk)
 
-  # write key index before the actual data, so it gets committed with
-  # the below commit statement.
-  if(file.exists(
-    file.path(repository_path, "data-raw/csv", "index.csv")
-  )) {
-    stop("Index already exists. Cannot import full history. Consider initiating a new dataset or use archive_register_ts to add new time series to an existing dataset.")
-  } else {
-    fwrite(list(ts_key = keys),
-           file = file.path(repository_path, "data-raw", "index.csv"))
-  }
 
   u <- unique(history_dt$release_date)
 
