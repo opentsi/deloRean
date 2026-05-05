@@ -30,7 +30,9 @@ archive_import_history <- function(history_dt,
   # fill index.md sections: hierarchy + series table + vintage dates
   index_md_path <- file.path(repository_path, "data-raw", "index.md")
 
-  update_index_section(index_md_path, "Index of Time Series", build_hierarchy(uk))
+  update_index_section(
+    index_md_path, "Index of Time Series", 
+    build_hierarchy(uk))
   
   message("Keys written into index.md")
 
@@ -58,3 +60,23 @@ archive_import_history <- function(history_dt,
                      repo = repository_path)
   }
 }
+
+
+
+library(kofdata)
+library(data.table)
+library(tsbox)
+
+global <- get_collection("globalbaro_vintages")
+names(global) <- gsub("globalbaro_","",names(global))
+names(global) <- sub("_", "\\.", names(global))
+class(global) <- c(class(global), "tslist")
+release_dates <- rep(seq(as.Date("2020-01-10"),
+                         by = "1 month",
+                         length.out = length(global)/2),2)
+vintages_dt <- create_vintage_dt(release_dates, global)
+head(vintages_dt)
+
+## Example Step 3, Import History to Archive
+debug(deloRean:::build_hierarchy)
+archive_import_history(vintages_dt, repository_path = ".")
