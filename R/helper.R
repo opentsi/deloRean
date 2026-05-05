@@ -1,7 +1,10 @@
 # Build a nested markdown list from dot-separated ids, with clickable CSV links.
 # Each group level becomes a bold bullet; leaf nodes become linked bullets.
-build_hierarchy <- function(ids, depth = 1L) {
-  lines <- c(lines, sprintf("- [%s](csv/%s.csv)", id, id))
+build_hierarchy <- function(ids) {
+  lines <- character(0)
+  for (id in ids) {
+    lines <- c(lines, sprintf("- [%s](csv/%s.csv)", id, id))
+  }
   lines
 }
 
