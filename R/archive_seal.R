@@ -65,7 +65,16 @@ archive_seal <- function(checksum_input, archive_path = NULL) {
 
   init_ok    <- dir.exists(file.path(archive_path, ".git")) &&
                   file.exists(file.path(archive_path, "DESCRIPTION"))
-  history_ok <- file.exists(file.path(archive_path, "data-raw", "index.csv"))
+  # history ok is a bit more complex,cant just check that index.md exists. 
+  history_ok <- local({
+    idx_path <- file.path(archive_path, "data-raw", "index.md")
+    if (!file.exists(idx_path)) return(FALSE)
+    txt <- readLines(idx_path, warn = FALSE)
+    h_idx <- grep("^## ", txt)
+    # need to check that keys andpaths are written below header
+    if (length(h_idx) == 0L) return(FALSE)
+    any(nzchar(trimws(txt[(h_idx[[1L]] + 1L):length(txt)])))
+  })
   meta_ok    <- file.exists(file.path(archive_path, "inst", "metadata.json"))
   process_ok <- file.exists(file.path(archive_path, "R", "process_data.R"))
   auto_ok    <- file.exists(file.path(archive_path, "R", "handle_update.R"))
