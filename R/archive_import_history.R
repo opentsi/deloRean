@@ -44,9 +44,13 @@ archive_import_history <- function(history_dt,
     # otherwise we get a commit for each file..
     git_add(files = "data-raw",
                   repo = repository_path)
-    git_commit(message = "opentsi full history init",
-                     author = sig,
-                     committer = sig,
-                     repo = repository_path)
+    # dont automatically commit, check whats there
+    staged <- gert::git_status(repo = repository_path)
+    if(any(staged$staged)){
+      git_commit(message = "opentsi full history init",
+                       author = sig,
+                       committer = sig,
+                       repo = repository_path)
+    }
   }
 }
