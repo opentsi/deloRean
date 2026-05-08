@@ -15,7 +15,9 @@ archive_import_history <- function(history_dt,
   keys <- sprintf("%s.%s", dataset_name, uk)
 
 
-  u <- unique(history_dt$release_date)
+  u <- sort(unique(history_dt$release_date))
+  # unique means newest vintage first, oldest last (so commit not up to date)
+  # u <- unique(history_dt$release_date)
 
   # fill index.md sections: hierarchy + series table + vintage dates
   index_md_path <- file.path(repository_path, "data-raw", "index.md")
