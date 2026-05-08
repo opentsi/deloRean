@@ -16,26 +16,25 @@ archive_import_history <- function(history_dt,
 
 
   u <- sort(unique(history_dt$release_date))
-  # unique means newest vintage first, oldest last (so commit not up to date)
-  # u <- unique(history_dt$release_date)
 
   # fill index.md sections: hierarchy + series table + vintage dates
   index_md_path <- file.path(repository_path, "data-raw", "index.md")
 
   update_index_section(
-    index_md_path, "Index of Time Series", 
+    index_md_path, "Index of Time Series",
     build_hierarchy(uk))
-  
+
   message("Keys written into index.md")
 
-  for(rd in u){
+  for(i in seq_along(u)){
+    rd <- u[i]
     sig <- git_signature("Open Time Series Initiative",
                                "bannert@kof.ethz.ch",
                                rd)
     rd_subset <- history_dt[release_date == rd]
 
-    for(i in 1:nrow(rd_subset)){
-      d <- rd_subset[i,]
+    for(j in seq_len(nrow(rd_subset))){
+      d <- rd_subset[j,]
       fwrite(d$data[[1]],
              file = file.path(path_chunk, paste0(d$id, ".csv"))
       )
