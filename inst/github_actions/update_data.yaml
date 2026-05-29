@@ -6,7 +6,8 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 10 1,5,15 * *"
-# triggers at 10:00 AM UTC on the 1st, 5th, and 15th of every month
+  # triggers at 10:00 on day 1, 5, and 15 every month
+
 
 # needed only for transfer
 # permissions:
@@ -40,11 +41,14 @@ jobs:
         run: |
           R -q -e 'install.packages("pak")'
           R -q -e 'pak::pkg_install("opentsi/opentimeseries")'
+          R -q -e 'pak::pkg_install("opentsi/tsdbapi-R")'
           R -q -e 'pak::pkg_install("${{ github.repository }}")'
 
       - name: handle_update
+        env: 
+          TSDBAPI: ${{secrets.TSDBAPI}}
         run: |
-          R -q -e '${{ github.event.repository.name }}::handle_update()'
+          R -q -e '${{ github.event.repository.name }}::handle_update(Sys.getenv("TSDBAPI"))'
       - name: Commit and push changes (if any)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -12,6 +12,50 @@ While most consumers are happy to just see whatever is the most recent informati
 evaluate their work have to have the same exact information they had back when they performed a computation.
 
 
+### attempting the plotting of the relevant ts:
+
+```r
+remotes::install_github("opentsi/opentimeseries")
+library(opentimeseries)
+
+# first param `series` defaults to NULL
+# fetches all series from `remove_archive``
+ts <- read_open_ts(
+  remote_archive = "opentsi/ch.kof.globalbaro" 
+)
+
+ts
+```
+
+Attempting Plotting
+
+```{r}
+# Load the historical data (added the missing comma after "coincident")
+ts_old <- read_open_ts(
+  series = "coincident",
+  remote_archive = "opentsi/ch.kof.globalbaro",
+  date = "2024-01-01"
+)
+
+# Load the current data (added the missing closing quote and comma)
+ts_new <- read_open_ts(
+  series = "coincident",
+  remote_archive = "opentsi/ch.kof.globalbaro"
+)
+# convert to date to plot
+ts_new$time <- as.Date(ts_new$time)
+ts_old$time <- as.Date(ts_old$time)
+
+# Plot the time series
+ts.plot(ts_ts(ts_new), ts_ts(ts_old),
+        col = c("black", "tomato"))
+
+
+# Add the legend
+legend("topleft", legend = c("current", "2024-01-01"),
+       col = c("black", "tomato"), lty = 1, bty = "n")
+```
+
 
 
 

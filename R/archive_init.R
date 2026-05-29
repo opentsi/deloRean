@@ -44,16 +44,56 @@ remotes::install_github(\"opentsi/opentimeseries\")
 library(opentimeseries)
 
 # first param `series` defaults to NULL
-# fetches all series from `remove_archive``
+# fetches all series from `remote_archive`
 ts <- read_open_ts(
-  remote_archive = \"opentsi/%s\" 
+  remote_archive = \"opentsi/%s\"
 )
 
 ts
 ```
+Given a unique time series identifier and a GitHub repo,
+*opentimeseries* will return a time series and long format `data.table`.
+
+## Basic Usage
+
+```{r, eval=FALSE}
+ts <- read_open_ts(
+  remote_archive = \"opentsi/%s\"
+)
+```
+By specifying a date in addition, you can able to obtain other versions
+but the most recent one. The *opentimeseries* package will simply select
+the most recent release that was available at the selected date.
+
+```{r, eval=FALSE}
+ts202307 <- read_open_ts(
+  remote_archive = \"opentsi/%s\",
+  date = \"2023-07-01\"
+)
+```
+Because time series data can get revised, storing vintages is important
+to monitor data revisions and benchmark forecasts. Here's a quick visual
+comparison:
+
+# please insert your main series you want to showcase visually
+# to replace this example! 
+```{r}
+ts <- read_open_ts(series = \"leading\",
+  remote_archive = \"opentsi/ch.kof.globalbaro\"
+)
+ts202307 <- read_open_ts(series = \"leading\",
+  remote_archive = \"opentsi/ch.kof.globalbaro\"
+  date = \"2023-07-01\"
+)
+a202307$id <- \"leading.202307\"
+a$id <- sprintf(\"leading.%s\", Sys.Date())
+ts_plot(rbind(a202307, a))
+```
 ",
   archive_name,
   generic_desc_no_ls,
+  archive_name,
+  archive_name,
   archive_name
   )
 
@@ -88,7 +128,7 @@ if (file.exists(git_ignore_path)) {
   cat(".claude", file = git_ignore_path, append = TRUE)
 }
 
-readme_loc <- file.path(archive_path, "README.md")
+readme_loc <- file.path(archive_path, "README.Rmd")
 file_touch(readme_loc)
 file_con <- file(readme_loc, "w")
 writeLines(readme_md_content, file_con)

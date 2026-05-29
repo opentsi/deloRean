@@ -1,0 +1,74 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# ch.fso.besta.vacancies
+
+The ch.fso.besta.vacancies package provides versioned time series data
+and their meta information for scientific research.
+In addition, the package contains the
+extract-transform-load (ETL) functionality that
+sources the data from its original provider.
+
+## Browse Time Series Data
+
+You can use GitHub's ability to render csv to explore the datasets.
+
+## Installation
+
+```{r eval=FALSE}
+# install.packages("remotes")
+remotes::install_github("opentsi/opentimeseries")
+```
+
+## Basic Usage
+
+Given a unique time series identifier and a GitHub repo,
+*opentimeseries* will return a time series and long format `data.table`.
+
+```{r example, eval=FALSE}
+library(opentimeseries)
+a <- read_open_ts("596.1",
+                  remote_archive = "opentsi/ch.fso.besta.vacancies") # total job vacancies
+a
+```
+
+By specifying a date in addition, you can able to obtain other versions
+but the most recent one. The *opentimeseries* package will simply select
+the most recent release that was available at the selected date.
+
+```{r eval=FALSE}
+a202307 <- read_open_ts("596.1",
+                  remote_archive = "opentsi/ch.fso.besta.vacancies",
+                  date = "2023-07-01")
+```
+
+Because time series data can get revised, storing vintages is important
+to monitor data revisions and benchmark forecasts. Here's a quick visual
+comparison:
+
+```{r}
+library(opentimeseries)
+library(tsbox)
+
+a <- read_open_ts("596.1",
+                  remote_archive = "opentsi/ch.fso.besta.vacancies")
+a202307 <- read_open_ts("596.1",
+                  remote_archive = "opentsi/ch.fso.besta.vacancies",
+                  date = "2023-07-01")
+
+a202307$id <- sprintf("%s.202307", a202307$id)
+a$id <- sprintf("%s.%s", a$id, Sys.Date())
+ts_plot(rbind(a202307, a))
+```
