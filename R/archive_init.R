@@ -86,7 +86,7 @@ ts202307 <- read_open_ts(series = \"leading\",
   date = \"2023-07-01\"
 )
 a202307$id <- \"leading.202307\"
-a$id <- sprintf(\"leading.%s\", Sys.Date())
+a$id <- sprintf(\"leading.202606\")
 ts_plot(rbind(a202307, a))
 ```
 ",
