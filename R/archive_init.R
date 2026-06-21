@@ -82,6 +82,9 @@ to monitor data revisions and benchmark forecasts. Here's a quick visual
 comparison:
 
 ```{r}
+library(opentimeseries)
+library(tsbox)
+
 ts <- read_open_ts(series = \"leading\",
   remote_archive = \"opentsi/ch.kof.globalbaro\"
 )
