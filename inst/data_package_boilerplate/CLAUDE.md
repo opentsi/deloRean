@@ -50,9 +50,9 @@ i want you to create this data repository, based on the intial boilerplate given
 
 and based on other existing data packages of this form given. For this, look at the following remote packages:
 
-- https://github.com/minnaheim/us.fred.indpro
-- https://github.com/minnaheim/ch.kof.barometer
-- https://github.com/minnaheim/ch.kof.globalbaro
+- https://github.com/opentsi/ch.kof.barometer
+- https://github.com/opentsi/ch.fso.besta.vacancies
+- https://github.com/opentsi/ch.kof.globalbaro
 
 
 the only thing that's different here is the new function `archive_seal` that has been newly added, and currently is only implemented in the us.fred.indrpo package.
