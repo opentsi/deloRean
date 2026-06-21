@@ -28,6 +28,18 @@ archive_init <- function(archive_name,
 
   readme_md_content <- sprintf(
     "
+---
+output: github_document
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = \"#>\",
+  fig.path = \"man/figures/README-\"
+)
+```
+
 # %s
 
 %s
@@ -65,18 +77,10 @@ By specifying a date in addition, you can able to obtain other versions
 but the most recent one. The *opentimeseries* package will simply select
 the most recent release that was available at the selected date.
 
-```{r, eval=FALSE}
-ts202307 <- read_open_ts(
-  remote_archive = \"opentsi/%s\",
-  date = \"2023-07-01\"
-)
-```
 Because time series data can get revised, storing vintages is important
 to monitor data revisions and benchmark forecasts. Here's a quick visual
 comparison:
 
-# please insert your main series you want to showcase visually
-# to replace this example! 
 ```{r}
 ts <- read_open_ts(series = \"leading\",
   remote_archive = \"opentsi/ch.kof.globalbaro\"
@@ -85,9 +89,9 @@ ts202307 <- read_open_ts(series = \"leading\",
   remote_archive = \"opentsi/ch.kof.globalbaro\"
   date = \"2023-07-01\"
 )
-a202307$id <- \"leading.202307\"
-a$id <- sprintf(\"leading.202606\")
-ts_plot(rbind(a202307, a))
+ts202307$id <- \"leading.202307\"
+ts$id <- sprintf(\"leading.202606\")
+ts_plot(rbind(ts202307, ts))
 ```
 ",
   archive_name,

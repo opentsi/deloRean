@@ -3,7 +3,7 @@
 #' Orchestrates the update process: checks if update is needed,
 #' processes data, writes output, and stores the new checksum.
 #'
-#' @importFrom opentimeseries write_open_ts is_update_needed update_checksum
+#' @importFrom opentimeseries is_update_needed update_checksum
 #' @export
 handle_update <- function(key = key) {
 
@@ -18,9 +18,9 @@ handle_update <- function(key = key) {
   # that returns the most recent version of a time series
   # from its original provider
   # Store checksum after successful update
-  upd <- update_checksum(checksum)
+  upd <- update_checksum(checksum_input)
   if(upd){
-    process_data("kofbarometer", ids = c("barometer"))
+    process_data(key = key)
   } else {
     message("Checksum initialized. Data untouched.")
   }
