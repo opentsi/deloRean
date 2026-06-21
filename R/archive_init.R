@@ -97,7 +97,6 @@ ts_plot(rbind(ts202307, ts))
   archive_name,
   generic_desc_no_ls,
   archive_name,
-  archive_name,
   archive_name
   )
 
