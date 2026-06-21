@@ -86,7 +86,7 @@ ts <- read_open_ts(series = \"leading\",
   remote_archive = \"opentsi/ch.kof.globalbaro\"
 )
 ts202307 <- read_open_ts(series = \"leading\",
-  remote_archive = \"opentsi/ch.kof.globalbaro\"
+  remote_archive = \"opentsi/ch.kof.globalbaro\",
   date = \"2023-07-01\"
 )
 ts202307$id <- \"leading.202307\"
