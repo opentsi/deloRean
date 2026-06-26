@@ -29,7 +29,8 @@ archive_import_history(vintages_dt, repository_path = ".")
 ## Step 5: Write & Validate Metadata
 
 # check if info is available via api
-indpau_meta <- read_dataset_ts_metadata("ch.fso.indpau") 
+# metadata is usually available in german, i.e. locale = "de"
+indpau_meta <- read_dataset_ts_metadata("ch.fso.indpau", locale = "en")
 
 render_metadata()
 meta <- read_metadata(".")
