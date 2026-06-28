@@ -3,7 +3,7 @@
 #'
 #' @importFrom fs dir_create file_touch file_copy file_move
 #' @importFrom usethis create_package
-#' @importFrom gert git_init git_add git_commit
+#' @importFrom gert git_init git_add git_commit git_branch_create git_branch_delete
 #' @export
 archive_init <- function(archive_name,
                          parent_dir = NULL,
@@ -213,6 +213,8 @@ message("Metadata template created at data-raw/metadata.yaml")
 repo <- git_init(archive_path)
 git_add(files = ".", repo = repo)
 git_commit("archive init commit", repo = repo)
+git_branch_create("main", repo = repo)
+git_branch_delete("master", repo = repo)
 
 msg <- sprintf("New opentimeseries archive '%s' created. Happy editing!",
         archive_name)
