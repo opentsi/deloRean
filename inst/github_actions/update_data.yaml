@@ -49,6 +49,11 @@ jobs:
           TSDBAPI: ${{secrets.TSDBAPI}}
         run: |
           R -q -e '${{ github.event.repository.name }}::handle_update(Sys.getenv("TSDBAPI"))'
+          
+      - name: Generate shield
+        run: |
+          R -q -e 'source("inst/generate_shield.R")'
+
       - name: Commit and push changes (if any)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
