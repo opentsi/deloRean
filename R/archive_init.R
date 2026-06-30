@@ -42,6 +42,9 @@ knitr::opts_chunk$set(
 
 # %s
 
+
+[![dataset](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/opentsi/%s/main/data-raw/shield.json)](https://github.com/opentsi/%s/actions/workflows/update_data.yaml)
+
 %s
 
 ## Browse Time Series Data
@@ -97,6 +100,8 @@ ts$id <- sprintf(\"leading.202606\")
 ts_plot(rbind(ts202307, ts))
 ```
 ",
+  archive_name,
+  archive_name,
   archive_name,
   generic_desc_no_ls,
   archive_name,
@@ -169,6 +174,13 @@ file_copy(system.file("data_package_boilerplate/boilerplate.R",
                       package = "deloRean"),
           file.path(archive_path,"inst"))
 
+file_copy(system.file("data_package_boilerplate/generate_shield.R",
+                      package = "deloRean"),
+          file.path(archive_path,"inst"))
+
+file_copy(system.file("data_package_boilerplate/shield.json",
+                      package = "deloRean"),
+          file.path(archive_path,"data-raw"))
 
 file_copy(system.file("data_package_boilerplate/process_data.R",
                       package = "deloRean"),
